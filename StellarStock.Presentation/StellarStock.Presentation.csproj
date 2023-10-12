@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-StellarStock.Presentation-33618127-cd4c-45f3-867f-2af63cf4bc20</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.11" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.13.1" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.13.1" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.13.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+
+</Project>
