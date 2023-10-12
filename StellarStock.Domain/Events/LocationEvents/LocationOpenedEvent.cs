@@ -1,12 +1,12 @@
 ﻿using StellarStock.Domain.Entities;
 
-namespace StellarStock.Domain.Events
+namespace StellarStock.Domain.Events.LocationEvents
 {
-    public class LocationUpdatedEvent
+    public class LocationOpenedEvent
     {
         public Location Location { get; }
 
-        public LocationUpdatedEvent(Location location)
+        public LocationOpenedEvent(Location location)
         {
             Location = location;
         }

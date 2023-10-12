@@ -1,14 +1,14 @@
 ﻿using StellarStock.Domain.Entities;
 
-namespace StellarStock.Domain.Events
+namespace StellarStock.Domain.Events.ItemEvents
 {
     public class InventoryItemUpdatedEvent
     {
         public InventoryItem InventoryItem { get; }
 
-        public InventoryItemUpdatedEvent(InventoryItem inventoryItem)
+        public InventoryItemUpdatedEvent(InventoryItem item)
         {
-            InventoryItem = inventoryItem;
+            InventoryItem = item;
         }
     }
 }

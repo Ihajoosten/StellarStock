@@ -1,6 +1,6 @@
 ﻿using StellarStock.Domain.Entities;
 
-namespace StellarStock.Domain.Events
+namespace StellarStock.Domain.Events.ItemEvents
 {
     public class InventoryItemCreatedEvent
     {

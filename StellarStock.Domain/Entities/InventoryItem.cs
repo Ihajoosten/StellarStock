@@ -40,13 +40,13 @@ namespace StellarStock.Domain.Entities
         public required DateRangeVO ValidityPeriod { get; set; }
 
         [ForeignKey("LocationId")]
-        public required Location? Location { get; set; }
+        public Location? Location { get; set; }
 
         [Required(ErrorMessage = "Supplier ID is required.")]
         public required string SupplierId { get; set; }
 
         [ForeignKey("SupplierId")]
-        public required Supplier Supplier { get; set; }
+        public Supplier? Supplier { get; set; }
     }
 
     public enum ItemCategory

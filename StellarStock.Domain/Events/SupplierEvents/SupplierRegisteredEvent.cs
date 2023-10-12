@@ -1,15 +1,14 @@
 ﻿using StellarStock.Domain.Entities;
 
-namespace StellarStock.Domain.Events
+namespace StellarStock.Domain.Events.SupplierEvents
 {
-    public class SupplierActivatedEvent
+    public class SupplierRegisteredEvent
     {
         public Supplier Supplier { get; }
 
-        public SupplierActivatedEvent(Supplier supplier)
+        public SupplierRegisteredEvent(Supplier supplier)
         {
             Supplier = supplier;
         }
     }
-
 }
