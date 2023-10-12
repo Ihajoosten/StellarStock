@@ -16,6 +16,11 @@ namespace StellarStock.Domain.Entities
         [MaxLength(25, ErrorMessage = "Supplier Phone cannot exceed 25 characters")]
         public required string Phone { get; set; }
 
+        [Required(ErrorMessage = "Contact Email is required.")]
+        [DataType(DataType.EmailAddress)]
+        [MaxLength(35, ErrorMessage = "Supplier Contact Email cannot exceed 35 characters")]
+        public required string ContactEmail { get; set; }
+
         [Required(ErrorMessage = "Address is required.")]
         public required AddressVO LocationAddress { get; set; }
 
