@@ -1,4 +1,5 @@
 ﻿using StellarStock.Domain.Entities.Base;
+using StellarStock.Domain.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -6,31 +7,36 @@ namespace StellarStock.Domain.Entities
 {
     public class InventoryItem : BaseEntity
     {
-        [Required]
+        [Required(ErrorMessage = "Name is required.")]
         [DataType(DataType.Text)]
         [MaxLength(75, ErrorMessage = "Name cannot exceed 75 characters")]
         public required string Name { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Description is required.")]
         [DataType(DataType.MultilineText)]
         [MaxLength(150, ErrorMessage = "Description cannot exceed 150 characters")]
         public required string Description { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Category is required.")]
         public required ItemCategory Category { get; set; }
 
-        [Required]
-        [Range(0, int.MaxValue, ErrorMessage = "Quantity must be a non-negative value.")]
-        public required int Quantity { get; set; }
+        [Required(ErrorMessage = "Product Code is required.")]
+        public required ProductCodeVO ProductCode { get; set; }
+
+        [Required(ErrorMessage = "Quantity is required.")]
+        public required QuantityVO Quantity { get; set; }
+
+        [Required(ErrorMessage = "Money is required.")]
+        public required MoneyVO Money { get; set; }
 
         // Navigation properties
-        [Required]
+        [Required(ErrorMessage = "Location ID is required.")]
         public required string LocationId { get; set; }
 
         [ForeignKey("LocationId")]
         public required Location? Location { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Supplier ID is required.")]
         public required string SupplierId { get; set; }
 
         [ForeignKey("SupplierId")]
