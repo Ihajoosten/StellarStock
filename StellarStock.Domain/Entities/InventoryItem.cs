@@ -20,6 +20,9 @@ namespace StellarStock.Domain.Entities
         [Required(ErrorMessage = "Category is required.")]
         public required ItemCategory Category { get; set; }
 
+        [Required(ErrorMessage = "Popularity Score is required.")]
+        public required int PopularityScore { get; set; }
+
         [Required(ErrorMessage = "Product Code is required.")]
         public required ProductCodeVO ProductCode { get; set; }
 
@@ -32,6 +35,9 @@ namespace StellarStock.Domain.Entities
         // Navigation properties
         [Required(ErrorMessage = "Location ID is required.")]
         public required string LocationId { get; set; }
+
+        [Required(ErrorMessage = "Validity Period is required.")]
+        public required DateRangeVO ValidityPeriod { get; set; }
 
         [ForeignKey("LocationId")]
         public required Location? Location { get; set; }

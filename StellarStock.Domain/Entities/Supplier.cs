@@ -18,5 +18,11 @@ namespace StellarStock.Domain.Entities
 
         [Required(ErrorMessage = "Address is required.")]
         public required AddressVO LocationAddress { get; set; }
+
+        [Required(ErrorMessage = "Active Status is required.")]
+        public required bool IsActive { get; set; }
+
+        [Required(ErrorMessage = "Validity Period is required.")]
+        public required DateRangeVO ValidityPeriod { get; set; }
     }
 }
