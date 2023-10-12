@@ -1,4 +1,4 @@
-# StellarStock
+# StellarStock [![.NET](https://github.com/Ihajoosten/StellarStock/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/Ihajoosten/StellarStock/actions/workflows/dotnet.yml)
 
 StellarStock is a robust inventory management system built on the .NET Core framework, employing the CQRS pattern and adhering to clean architecture principles. It provides a scalable and maintainable solution for businesses seeking efficient control over their stock and inventory.
 
