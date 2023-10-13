@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using StellarStock.Domain.Repositories;
 using StellarStock.Domain.Repositories.Base;
 using StellarStock.Domain.Services;
 using StellarStock.Domain.Services.Interfaces;
 using StellarStock.Infrastructure.Data;
 using StellarStock.Infrastructure.Data.Interfaces;
+using StellarStock.Infrastructure.Repositories;
 using StellarStock.Infrastructure.Repositories.Base;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,9 +32,9 @@ services.AddScoped<IAppSupplierService, AppSupplierService>();*/
 
 // Infrastructure Repository Dependencies
 services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));
-/*services.AddScoped<IInventoryItemRepository, EFInventoryItemRepository>();
+services.AddScoped<IInventoryItemRepository, EFInventoryItemRepository>();
 services.AddScoped<IWarehouseRepository, EFWarehouseRepository>();
-services.AddScoped<ISupplierRepository, EFSupplierRepository>();*/
+services.AddScoped<ISupplierRepository, EFSupplierRepository>();
 
 // Domain Service Dependencies
 services.AddScoped<IInventoryItemService, InventoryItemService>();
