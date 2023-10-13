@@ -2,11 +2,11 @@
 
 namespace StellarStock.Domain.Events.SupplierEvents
 {
-    public class SupplierRegisteredEvent
+    public class SupplierCreatedEvent
     {
         public Supplier Supplier { get; }
 
-        public SupplierRegisteredEvent(Supplier supplier)
+        public SupplierCreatedEvent(Supplier supplier)
         {
             Supplier = supplier;
         }
