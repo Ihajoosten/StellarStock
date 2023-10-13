@@ -30,5 +30,22 @@ namespace StellarStock.Infrastructure.Data
         {
             return base.Entry(entity);
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<InventoryItem>()
+                .HasOne(item => item.Supplier)
+                .WithMany(supplier => supplier.SuppliedItems)
+                .HasForeignKey(item => item.SupplierId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InventoryItem>()
+                .HasOne(item => item.Warehouse)
+                .WithMany(supplier => supplier.StockedItems)
+                .HasForeignKey(item => item.WarehouseId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }
