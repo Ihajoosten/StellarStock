@@ -18,13 +18,13 @@ namespace StellarStock.Domain.Aggregates
 
         private readonly IInventoryItemRepository _inventoryItemRepository;
 
-        public LocationAggregate(Location location, IInventoryItemRepository inventoryItemRepository)
+        public LocationAggregate(Location? location, IInventoryItemRepository inventoryItemRepository)
         {
             ValidateAndSetProperties(location);
             _inventoryItemRepository = inventoryItemRepository;
         }
 
-        private void ValidateAndSetProperties(Location location)
+        private void ValidateAndSetProperties(Location? location)
         {
             // Basic validation
             if (location == null)
@@ -46,7 +46,7 @@ namespace StellarStock.Domain.Aggregates
             }
 
             // Create the inventory item...
-            var location = new Location
+            Location = new Location
             {
                 Id = new Guid().ToString(),
                 StoreName = name,
@@ -58,8 +58,8 @@ namespace StellarStock.Domain.Aggregates
             };
 
             // Raise the events
-            OnLocationCreated(location);
-            OnLocationUpdated(location);
+            OnLocationCreated(Location);
+            OnLocationUpdated(Location);
         }
 
         public void UpdateLocation(string newStoreName, string newPhone, AddressVO newLocationAddress)
