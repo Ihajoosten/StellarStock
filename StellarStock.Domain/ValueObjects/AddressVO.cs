@@ -14,7 +14,7 @@ namespace StellarStock.Domain.ValueObjects
 
         [Required(ErrorMessage = "City is required.")]
         [MaxLength(25, ErrorMessage = "City cannot exceed 25 characters.")]
-        public string Region { get; }
+        public string Region { get; set; }
 
         [Required(ErrorMessage = "Postal Code is required.")]
         [StringLength(10, MinimumLength = 5, ErrorMessage = "Postal Code must be between 5 and 10 characters.")]

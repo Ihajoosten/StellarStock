@@ -32,12 +32,12 @@ namespace StellarStock.Domain.Entities
         [Required(ErrorMessage = "Money is required.")]
         public required MoneyVO Money { get; set; }
 
+        [Required(ErrorMessage = "Validity Period is required.")]
+        public required DateRangeVO ValidityPeriod { get; set; }
+
         // Navigation properties
         [Required(ErrorMessage = "Location ID is required.")]
         public required string LocationId { get; set; }
-
-        [Required(ErrorMessage = "Validity Period is required.")]
-        public required DateRangeVO ValidityPeriod { get; set; }
 
         [ForeignKey("LocationId")]
         public Location? Location { get; set; }

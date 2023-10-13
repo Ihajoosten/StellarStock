@@ -18,6 +18,11 @@ namespace StellarStock.Domain.Entities
 
         [Required(ErrorMessage = "Address is required.")]
         public required AddressVO LocationAddress { get; set; }
+
+        [Required(ErrorMessage = "Open Status is required.")]
+        public required bool IsOpen { get; set; }
+
+        public ICollection<InventoryItem>? InventoryItems { get; set; }
     }
 }
 

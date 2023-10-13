@@ -12,5 +12,6 @@ namespace StellarStock.Domain.Repositories
         Task<IEnumerable<InventoryItem>> GetItemsByPopularityScoreAsync(int minScore, int maxScore);
         Task<IEnumerable<InventoryItem>> GetTopPopularItemsAsync(int count);
         Task<IEnumerable<InventoryItem>> GetItemsInStockAsync();
+        Task<IEnumerable<InventoryItem>> GetItemsByLocation(string locationId);
     }
 }
