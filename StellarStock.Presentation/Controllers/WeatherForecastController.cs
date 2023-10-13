@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web.Resource;
 using Microsoft.Graph;
+using Microsoft.Identity.Web.Resource;
 
 namespace StellarStock.Presentation.Controllers
 {
