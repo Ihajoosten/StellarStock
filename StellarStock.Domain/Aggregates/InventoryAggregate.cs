@@ -1,7 +1,6 @@
 ﻿using StellarStock.Domain.Entities;
 using StellarStock.Domain.Events.ItemEvents;
 using StellarStock.Domain.ValueObjects;
-using System.Xml.Linq;
 
 namespace StellarStock.Domain.Aggregates
 {
@@ -41,7 +40,7 @@ namespace StellarStock.Domain.Aggregates
         public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string locationId, string supplierId, DateRangeVO validityPeriod)
         {
             // Validate business rules...
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(description) || popularityScore < 0 || productCode == null 
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(description) || popularityScore < 0 || productCode == null
                 || quantity == null || money == null || string.IsNullOrEmpty(locationId) || string.IsNullOrEmpty(supplierId) || validityPeriod == null)
             {
                 // Handle validation error, throw an exception, or take appropriate action.
@@ -80,7 +79,7 @@ namespace StellarStock.Domain.Aggregates
                 throw new ArgumentException("Quantity must be a non-negative value.");
             }
 
-            var currentQuantity = InventoryItem.Quantity.Value; 
+            var currentQuantity = InventoryItem.Quantity.Value;
             var quantityChange = newQuantity - currentQuantity;
             if (Math.Abs(quantityChange) > 150)
             {
@@ -166,10 +165,10 @@ namespace StellarStock.Domain.Aggregates
                 throw new ArgumentException("New description cannot be null or empty.");
             }
 
-            if (int.IsPositive(newPopularityScore))
+            if (!int.IsPositive(newPopularityScore))
             {
                 // Handle validation error, throw an exception, or take appropriate action.
-                throw new ArgumentException("New popularity score cannot be negatilve.");
+                throw new ArgumentException("New popularity score cannot be negative.");
             }
 
             // Check if the item is not expired before updating.

@@ -1,11 +1,6 @@
 ﻿using StellarStock.Domain.Repositories;
 using StellarStock.Domain.Services.Interfaces;
 using StellarStock.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StellarStock.Domain.Services
 {
@@ -80,7 +75,7 @@ namespace StellarStock.Domain.Services
             var hasItems = await _inventoryItemRepository.GetItemsByLocation(locationId);
 
             if (hasItems.Any()) return false;
-            
+
             return true;
         }
 

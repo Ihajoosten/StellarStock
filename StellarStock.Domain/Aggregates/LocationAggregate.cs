@@ -2,8 +2,6 @@
 using StellarStock.Domain.Events.LocationEvents;
 using StellarStock.Domain.Repositories;
 using StellarStock.Domain.ValueObjects;
-using System.Diagnostics.Metrics;
-using System.Net;
 
 namespace StellarStock.Domain.Aggregates
 {
@@ -41,7 +39,7 @@ namespace StellarStock.Domain.Aggregates
         public void CreateLocation(string name, string phone, AddressVO address, bool isOpen)
         {
             // Validate business rules...
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || address  == null ||IsLocationAddressInvalid(address) || !isOpen)
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || address == null || IsLocationAddressInvalid(address) || !isOpen)
             {
                 // Handle validation error, throw an exception, or take appropriate action.
                 throw new ArgumentException("Invalid input for creating an inventory item.");

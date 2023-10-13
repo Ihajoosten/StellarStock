@@ -84,7 +84,7 @@ namespace StellarStock.Domain.Aggregates
             Supplier.Name = newStoreName;
             Supplier.Phone = newPhone;
             Supplier.ContactEmail = newEmail;
-            Supplier.SupplierAddress= newSupplierAddress;
+            Supplier.SupplierAddress = newSupplierAddress;
             Supplier.UpdatedAt = DateTime.Now;
 
             // Raise an event
