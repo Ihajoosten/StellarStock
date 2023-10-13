@@ -1,6 +1,4 @@
-﻿using Moq;
-
-namespace StellarStock.Test.Domain.UnitTests
+﻿namespace StellarStock.Test.Domain.UnitTests
 {
     public class InventoryAggregateTests
     {
