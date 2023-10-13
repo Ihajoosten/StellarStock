@@ -77,7 +77,7 @@ namespace StellarStock.Domain.Aggregates
             }
             else if (IsAddressInvalid(newAddress))
             {
-                throw new ArgumentException("New Address properties cannot be null or empty");
+                throw new ArgumentException("New address properties cannot be null or empty");
             }
 
             // Update the item information
@@ -111,7 +111,7 @@ namespace StellarStock.Domain.Aggregates
 
         public void CloseWarehouse(bool isOpen)
         {
-            if (!isOpen) { throw new ArgumentException("Cannot close and already closed store Warehouse"); }
+            if (!isOpen) { throw new ArgumentException("Cannot close an already closed Warehouse"); }
 
             Warehouse.IsOpen = false;
             Warehouse.UpdatedAt = DateTime.Now;
@@ -121,7 +121,7 @@ namespace StellarStock.Domain.Aggregates
 
         public void ReopenWarehouse(bool isOpen)
         {
-            if (isOpen) { throw new ArgumentException("Cannot open and already opened store Warehouse"); }
+            if (isOpen) { throw new ArgumentException("Cannot open an already opened Warehouse"); }
 
             Warehouse.IsOpen = false;
             Warehouse.UpdatedAt = DateTime.Now;

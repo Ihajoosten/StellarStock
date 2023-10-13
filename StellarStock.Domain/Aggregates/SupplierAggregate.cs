@@ -72,7 +72,7 @@ namespace StellarStock.Domain.Aggregates
             }
             if (IsAddressInvalid(newAddress))
             {
-                throw new ArgumentException("New Address properties cannot be null or empty");
+                throw new ArgumentException("New address properties cannot be null or empty");
             }
             // Check if the item is not expired before removal.
             if (Supplier.ValidityPeriod != null && Supplier.ValidityPeriod.EndDate <= DateTime.UtcNow)
