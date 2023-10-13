@@ -14,12 +14,12 @@ namespace StellarStock.Domain.Aggregates
         public event EventHandler<SupplierUpdatedEvent> SupplierUpdated;
         public event EventHandler<SupplierDeletedEvent> SupplierDeleted;
 
-        public SupplierAggregate(Supplier supplier)
+        public SupplierAggregate(Supplier? supplier)
         {
             ValidateAndSetProperties(supplier);
         }
 
-        private void ValidateAndSetProperties(Supplier supplier)
+        private void ValidateAndSetProperties(Supplier? supplier)
         {
             Supplier = supplier ?? throw new ArgumentNullException(nameof(supplier));
         }

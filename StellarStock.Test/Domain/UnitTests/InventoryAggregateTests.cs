@@ -1,12 +1,19 @@
-﻿using StellarStock.Domain.Aggregates;
-using StellarStock.Domain.Entities;
-using StellarStock.Domain.Events.ItemEvents;
+﻿using Moq;
 
 namespace StellarStock.Test.Domain.UnitTests
 {
     public class InventoryAggregateTests
     {
-        // Fact Test
+        [Fact]
+        public void ThrowsArgumentNullException_With_InvalidInventoryItem()
+        {
+            // Assert & Act
+            var exception = Assert.Throws<ArgumentNullException>(() => new InventoryAggregate(null));
+
+            // Assert message
+            Assert.Equal("Value cannot be null. (Parameter 'inventoryItem')", exception.Message);
+        }
+
         [Fact]
         public void CanCreateInventoryItem()
         {
@@ -28,6 +35,14 @@ namespace StellarStock.Test.Domain.UnitTests
                 UpdatedAt = DateTime.Now
             });
 
+            // Mock the event handler
+            var itemCreatedEventHandler = new Mock<EventHandler<InventoryItemCreatedEvent>>();
+            var itemUpdatedEventHandler = new Mock<EventHandler<InventoryItemUpdatedEvent>>();
+
+            // Hook the mock event handler to the event
+            inventory.InventoryItemCreated += itemCreatedEventHandler.Object;
+            inventory.InventoryItemUpdated += itemUpdatedEventHandler.Object;
+
             // Act
             inventory.CreateInventoryItem("Test Item", "Description", ItemCategory.Tablet, 20, new ProductCodeVO("asfasdf-654wer-asdfa"), new QuantityVO(30),
                 new MoneyVO(3, "EUR"), "12asdf-adsf234-asdf234", "a235sd-adsa23j-ap13pbw", new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)));
@@ -43,6 +58,15 @@ namespace StellarStock.Test.Domain.UnitTests
             Assert.Equal(3, inventory.InventoryItem.Money.Amount);
             Assert.Equal("EUR", inventory.InventoryItem.Money.Currency);
             Assert.Equal("12asdf-adsf234-asdf234", inventory.InventoryItem.LocationId);
+
+            // Verify that the events were raised
+            itemCreatedEventHandler.Verify(
+                handler => handler(It.IsAny<object>(), It.IsAny<InventoryItemCreatedEvent>()),
+                Times.Once);
+
+            itemUpdatedEventHandler.Verify(
+                handler => handler(It.IsAny<object>(), It.IsAny<InventoryItemUpdatedEvent>()),
+                Times.Once);
         }
 
         // Theory Test
@@ -69,6 +93,12 @@ namespace StellarStock.Test.Domain.UnitTests
                 UpdatedAt = DateTime.Now
             });
 
+            // Mock the event handler
+            var itemUpdatedPopularityScoreEventHandler = new Mock<EventHandler<InventoryItemPopularityUpdatedEvent>>();
+
+            // Hook the mock event handler to the event
+            inventory.InventoryItemPopularityUpdated += itemUpdatedPopularityScoreEventHandler.Object;
+
             inventory.CreateInventoryItem("Test Item", "Description", ItemCategory.Tablet, initialPopularity, new ProductCodeVO("asfasdf-654wer-asdfa"), new QuantityVO(30),
                 new MoneyVO(3, "EUR"), "12asdf-adsf234-asdf234", "a235sd-adsa23j-ap13pbw", new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)));
 
@@ -77,6 +107,11 @@ namespace StellarStock.Test.Domain.UnitTests
 
             // Assert
             Assert.Equal(newPopularity, inventory.InventoryItem.PopularityScore);
+
+            // Verify that the events were raised
+            itemUpdatedPopularityScoreEventHandler.Verify(
+                handler => handler(It.IsAny<object>(), It.IsAny<InventoryItemPopularityUpdatedEvent>()),
+                Times.Once);
         }
 
         // Theory Test with Exception
@@ -256,6 +291,12 @@ namespace StellarStock.Test.Domain.UnitTests
             var newQuantity = new QuantityVO(50); // Assuming 50 is a valid quantity
             var newMoney = new MoneyVO(10.99m, "USD"); // Assuming 10.99 USD is a valid money value
 
+            // Mock the event handler
+            var itemUpdatedEventHandler = new Mock<EventHandler<InventoryItemUpdatedEvent>>();
+
+            // Hook the mock event handler to the event
+            inventoryAggregate.InventoryItemUpdated += itemUpdatedEventHandler.Object;
+
             // Act
             inventoryAggregate.UpdateItem(newName, newDescription, newPopularityScore, newQuantity, newMoney);
 
@@ -265,6 +306,11 @@ namespace StellarStock.Test.Domain.UnitTests
             Assert.Equal(newPopularityScore, inventoryAggregate.InventoryItem.PopularityScore);
             Assert.Equal(newQuantity, inventoryAggregate.InventoryItem.Quantity);
             Assert.Equal(newMoney, inventoryAggregate.InventoryItem.Money);
+
+            // Verify that the events were raised
+            itemUpdatedEventHandler.Verify(
+                handler => handler(It.IsAny<object>(), It.IsAny<InventoryItemUpdatedEvent>()),
+                Times.Once);
         }
 
         [Fact]
@@ -289,7 +335,7 @@ namespace StellarStock.Test.Domain.UnitTests
             });
             var newName = string.Empty; // Invalid input
             var newDescription = "Updated item description.";
-            var newPopularityScore = 15; 
+            var newPopularityScore = 15;
             var newQuantity = new QuantityVO(10);
             var newMoney = new MoneyVO(10.99m, "USD");
 
