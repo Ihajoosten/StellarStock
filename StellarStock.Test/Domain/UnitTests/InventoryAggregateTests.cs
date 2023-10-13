@@ -177,7 +177,7 @@
             var exception = Assert.Throws<ArgumentException>(() => inventory.MoveItem(newLocation));
 
             // Assert message
-            Assert.Equal("New location ID cannot be null or empty.", exception.Message);
+            Assert.Equal("New warehouse ID cannot be null or empty.", exception.Message);
         }
 
         [Fact]

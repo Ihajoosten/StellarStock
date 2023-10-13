@@ -11,7 +11,7 @@
             var exception = Assert.Throws<ArgumentNullException>(() => new WarehouseAggregate(null, inventoryItemRepositoryMock.Object));
 
             // Assert message
-            Assert.Equal("Value cannot be null. (Parameter 'Warehouse')", exception.Message);
+            Assert.Equal("Value cannot be null. (Parameter 'warehouse')", exception.Message);
         }
 
         [Fact]
