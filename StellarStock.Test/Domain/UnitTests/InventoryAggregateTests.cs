@@ -27,7 +27,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -55,7 +55,7 @@
             Assert.Equal(30, inventory.InventoryItem.Quantity.Value);
             Assert.Equal(3, inventory.InventoryItem.Money.Amount);
             Assert.Equal("EUR", inventory.InventoryItem.Money.Currency);
-            Assert.Equal("12asdf-adsf234-asdf234", inventory.InventoryItem.LocationId);
+            Assert.Equal("12asdf-adsf234-asdf234", inventory.InventoryItem.WarehouseId);
 
             // Verify that the events were raised
             itemCreatedEventHandler.Verify(
@@ -85,7 +85,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -130,7 +130,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(new DateTime(2023, 9, 21), new DateTime(2023, 9, 21)),
-                LocationId = initialLocation,
+                WarehouseId = initialLocation,
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -164,7 +164,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = initialLocation,
+                WarehouseId = initialLocation,
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -177,7 +177,7 @@
             var exception = Assert.Throws<ArgumentException>(() => inventory.MoveItem(newLocation));
 
             // Assert message
-            Assert.Equal("New location ID cannot be null or empty.", exception.Message);
+            Assert.Equal("New warehouse ID cannot be null or empty.", exception.Message);
         }
 
         [Fact]
@@ -196,7 +196,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -224,7 +224,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -251,7 +251,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = expiredValidityPeriod,
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -277,7 +277,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -326,7 +326,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now
@@ -360,7 +360,7 @@
                 Quantity = new QuantityVO(30),
                 Money = new MoneyVO(3, "EUR"),
                 ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 10, 21)),
-                LocationId = "12asdf-adsf234-asdf234",
+                WarehouseId = "12asdf-adsf234-asdf234",
                 SupplierId = "a235sd-adsa23j-ap13pbw",
                 CreatedAt = DateTime.Now,
                 UpdatedAt = DateTime.Now

@@ -29,7 +29,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -52,7 +52,7 @@
             Assert.Equal(name, supplierAggregate.Supplier.Name);
             Assert.Equal(phone, supplierAggregate.Supplier.Phone);
             Assert.Equal(email, supplierAggregate.Supplier.ContactEmail);
-            Assert.Equal(address, supplierAggregate.Supplier.SupplierAddress);
+            Assert.Equal(address, supplierAggregate.Supplier.Address);
             Assert.True(supplierAggregate.Supplier.IsActive);
             Assert.Equal(validityPeriod, supplierAggregate.Supplier.ValidityPeriod);
 
@@ -73,7 +73,7 @@
             var newStoreName = "New Store Name";
             var newPhone = "987654321";
             var newEmail = "newemail@example.com";
-            var newSupplierAddress = new AddressVO("New Street", "New City", "New Region", "New Country", "New PostalCode");
+            var newAddress = new AddressVO("New Street", "New City", "New Region", "New Country", "New PostalCode");
 
             var validityPeriod = new DateRangeVO(DateTime.UtcNow, DateTime.UtcNow.AddDays(30));
             var supplierAggregate = new SupplierAggregate(new Supplier
@@ -82,7 +82,7 @@
                 Name = "name",
                 Phone = "phone",
                 ContactEmail = "email@test.nl",
-                SupplierAddress = new AddressVO("Old Street", "Old City", "Old Region", "Old Country", "Old PostalCode"),
+                Address = new AddressVO("Old Street", "Old City", "Old Region", "Old Country", "Old PostalCode"),
                 IsActive = true,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -96,13 +96,13 @@
             supplierAggregate.SupplierUpdated += supplierUpdatedEventHandler.Object;
 
             // Act
-            supplierAggregate.UpdateSupplier(newStoreName, newPhone, newEmail, newSupplierAddress);
+            supplierAggregate.UpdateSupplier(newStoreName, newPhone, newEmail, newAddress);
 
             // Assert
             Assert.Equal(newStoreName, supplierAggregate.Supplier.Name);
             Assert.Equal(newPhone, supplierAggregate.Supplier.Phone);
             Assert.Equal(newEmail, supplierAggregate.Supplier.ContactEmail);
-            Assert.Equal(newSupplierAddress, supplierAggregate.Supplier.SupplierAddress);
+            Assert.Equal(newAddress, supplierAggregate.Supplier.Address);
 
             // Verify that the event was raised
             supplierUpdatedEventHandler.Verify(
@@ -127,7 +127,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -168,7 +168,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -212,7 +212,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -256,7 +256,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -302,7 +302,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -331,7 +331,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -360,7 +360,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -389,7 +389,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -418,7 +418,7 @@
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,

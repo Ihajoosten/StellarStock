@@ -27,7 +27,7 @@ namespace StellarStock.Domain.Aggregates
         public void CreateSupplier(string name, string phone, string email, AddressVO address, bool isActive, DateRangeVO validityPeriod)
         {
             // Validate business rules...
-            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || address == null || IsSupplierAddressInvalid(address) || !isActive || validityPeriod == null)
+            if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(phone) || address == null || IsAddressInvalid(address) || !isActive || validityPeriod == null)
             {
                 // Handle validation error, throw an exception, or take appropriate action.
                 throw new ArgumentException("Invalid input for creating an supplier.");
@@ -40,7 +40,7 @@ namespace StellarStock.Domain.Aggregates
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
-                SupplierAddress = address,
+                Address = address,
                 IsActive = isActive,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
@@ -52,7 +52,7 @@ namespace StellarStock.Domain.Aggregates
             OnSupplierUpdated(supplier);
         }
 
-        public void UpdateSupplier(string newStoreName, string newPhone, string newEmail, AddressVO newSupplierAddress)
+        public void UpdateSupplier(string newStoreName, string newPhone, string newEmail, AddressVO newAddress)
         {
             // Validate inputs...
             if (string.IsNullOrEmpty(newStoreName))
@@ -70,9 +70,9 @@ namespace StellarStock.Domain.Aggregates
                 // Handle validation error, throw an exception, or take appropriate action.
                 throw new ArgumentException("New email cannot be null or empty.");
             }
-            if (IsSupplierAddressInvalid(newSupplierAddress))
+            if (IsAddressInvalid(newAddress))
             {
-                throw new ArgumentException("New Address properties cannot be null or empty");
+                throw new ArgumentException("New address properties cannot be null or empty");
             }
             // Check if the item is not expired before removal.
             if (Supplier.ValidityPeriod != null && Supplier.ValidityPeriod.EndDate <= DateTime.UtcNow)
@@ -84,7 +84,7 @@ namespace StellarStock.Domain.Aggregates
             Supplier.Name = newStoreName;
             Supplier.Phone = newPhone;
             Supplier.ContactEmail = newEmail;
-            Supplier.SupplierAddress = newSupplierAddress;
+            Supplier.Address = newAddress;
             Supplier.UpdatedAt = DateTime.Now;
 
             // Raise an event
@@ -128,7 +128,7 @@ namespace StellarStock.Domain.Aggregates
         }
 
 
-        private static bool IsSupplierAddressInvalid(AddressVO address)
+        private static bool IsAddressInvalid(AddressVO address)
         {
             return string.IsNullOrEmpty(address.Country) ||
                    string.IsNullOrEmpty(address.City) ||

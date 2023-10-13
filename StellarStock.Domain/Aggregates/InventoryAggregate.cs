@@ -37,11 +37,11 @@ namespace StellarStock.Domain.Aggregates
             InventoryItem = inventoryItem;
         }
 
-        public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string locationId, string supplierId, DateRangeVO validityPeriod)
+        public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string warehouseId, string supplierId, DateRangeVO validityPeriod)
         {
             // Validate business rules...
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(description) || popularityScore < 0 || productCode == null
-                || quantity == null || money == null || string.IsNullOrEmpty(locationId) || string.IsNullOrEmpty(supplierId) || validityPeriod == null)
+                || quantity == null || money == null || string.IsNullOrEmpty(warehouseId) || string.IsNullOrEmpty(supplierId) || validityPeriod == null)
             {
                 // Handle validation error, throw an exception, or take appropriate action.
                 throw new ArgumentException("Invalid input for creating an inventory item.");
@@ -61,7 +61,7 @@ namespace StellarStock.Domain.Aggregates
                 Quantity = quantity,
                 Money = money,
                 ValidityPeriod = validityPeriod,
-                LocationId = locationId,
+                WarehouseId = warehouseId,
                 SupplierId = supplierId
             };
 
@@ -110,13 +110,13 @@ namespace StellarStock.Domain.Aggregates
             OnInventoryItemExpired(InventoryItem.Id);
         }
 
-        public void MoveItem(string newLocationId)
+        public void MoveItem(string newWarehouseId)
         {
             // Validate and move the item...
-            if (string.IsNullOrEmpty(newLocationId))
+            if (string.IsNullOrEmpty(newWarehouseId))
             {
                 // Handle validation error, throw an exception, or take appropriate action.
-                throw new ArgumentException("New location ID cannot be null or empty.");
+                throw new ArgumentException("New warehouse ID cannot be null or empty.");
             }
 
             // Check if the item is not expired before moving.
@@ -125,11 +125,11 @@ namespace StellarStock.Domain.Aggregates
                 throw new InvalidOperationException("Cannot move an expired item.");
             }
 
-            // Update the location ID
-            InventoryItem.LocationId = newLocationId;
+            // Update the warehouse ID
+            InventoryItem.WarehouseId = newWarehouseId;
 
             // Raise an event
-            OnInventoryItemMoved(InventoryItem.Id, newLocationId);
+            OnInventoryItemMoved(InventoryItem.Id, newWarehouseId);
         }
 
         public void RemoveItem()
@@ -235,9 +235,9 @@ namespace StellarStock.Domain.Aggregates
             InventoryItemExpired?.Invoke(this, new InventoryItemExpiredEvent(inventoryItemId));
         }
 
-        private void OnInventoryItemMoved(string inventoryItemId, string newLocationId)
+        private void OnInventoryItemMoved(string inventoryItemId, string newWarehouseId)
         {
-            InventoryItemMoved?.Invoke(this, new InventoryItemMovedEvent(inventoryItemId, newLocationId));
+            InventoryItemMoved?.Invoke(this, new InventoryItemMovedEvent(inventoryItemId, newWarehouseId));
         }
 
         private void OnInventoryItemRemoved(string inventoryItemId)
