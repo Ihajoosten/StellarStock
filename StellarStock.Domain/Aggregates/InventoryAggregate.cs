@@ -20,12 +20,12 @@ namespace StellarStock.Domain.Aggregates
         public event EventHandler<InventoryItemSoldEvent> InventoryItemSold;
         public event EventHandler<InventoryItemRestockedEvent> InventoryItemRestocked;
 
-        public InventoryAggregate(InventoryItem inventoryItem)
+        public InventoryAggregate(InventoryItem? inventoryItem)
         {
             ValidateAndSetProperties(inventoryItem);
         }
 
-        private void ValidateAndSetProperties(InventoryItem inventoryItem)
+        private void ValidateAndSetProperties(InventoryItem? inventoryItem)
         {
             // Basic validation
             if (inventoryItem == null)
