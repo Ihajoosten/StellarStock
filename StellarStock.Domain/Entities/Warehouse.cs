@@ -4,12 +4,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace StellarStock.Domain.Entities
 {
-    public class Location : BaseEntity
+    public class Warehouse : BaseEntity
     {
         [Required(ErrorMessage = "Name is required.")]
         [DataType(DataType.Text)]
         [MaxLength(25, ErrorMessage = "Store Name cannot exceed 25 characters")]
-        public required string StoreName { get; set; }
+        public required string Name { get; set; }
 
         [Required(ErrorMessage = "Phone is required.")]
         [DataType(DataType.PhoneNumber)]
@@ -17,12 +17,12 @@ namespace StellarStock.Domain.Entities
         public required string Phone { get; set; }
 
         [Required(ErrorMessage = "Address is required.")]
-        public required AddressVO LocationAddress { get; set; }
+        public required AddressVO Address { get; set; }
 
         [Required(ErrorMessage = "Open Status is required.")]
         public required bool IsOpen { get; set; }
 
-        public ICollection<InventoryItem>? InventoryItems { get; set; }
+        public ICollection<InventoryItem>? StockedItems { get; set; }
     }
 }
 

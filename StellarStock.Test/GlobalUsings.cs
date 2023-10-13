@@ -8,7 +8,7 @@ global using StellarStock.Domain.Entities;
 global using StellarStock.Domain.ValueObjects;
 global using StellarStock.Domain.Events.ItemEvents;
 global using StellarStock.Domain.Events.SupplierEvents;
-global using StellarStock.Domain.Events.LocationEvents;
+global using StellarStock.Domain.Events.WarehouseEvents;
 global using StellarStock.Domain.Repositories;
 
 // Application Layer Imports
