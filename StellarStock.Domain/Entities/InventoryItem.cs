@@ -36,11 +36,11 @@ namespace StellarStock.Domain.Entities
         public required DateRangeVO ValidityPeriod { get; set; }
 
         // Navigation properties
-        [Required(ErrorMessage = "Location ID is required.")]
-        public required string LocationId { get; set; }
+        [Required(ErrorMessage = "Warehouse ID is required.")]
+        public required string WarehouseId { get; set; }
 
-        [ForeignKey("LocationId")]
-        public Location? Location { get; set; }
+        [ForeignKey("WarehouseId")]
+        public Warehouse? Warehouse { get; set; }
 
         [Required(ErrorMessage = "Supplier ID is required.")]
         public required string SupplierId { get; set; }

@@ -22,12 +22,14 @@ namespace StellarStock.Domain.Entities
         public required string ContactEmail { get; set; }
 
         [Required(ErrorMessage = "Address is required.")]
-        public required AddressVO SupplierAddress { get; set; }
+        public required AddressVO Address { get; set; }
 
         [Required(ErrorMessage = "Active Status is required.")]
         public required bool IsActive { get; set; }
 
         [Required(ErrorMessage = "Validity Period is required.")]
         public required DateRangeVO ValidityPeriod { get; set; }
+
+        public ICollection<InventoryItem>? SuppliedItems { get; set; }
     }
 }

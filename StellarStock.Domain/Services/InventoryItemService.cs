@@ -7,9 +7,9 @@ namespace StellarStock.Domain.Services
     public class InventoryItemService : IInventoryItemService
     {
         private readonly IInventoryItemRepository _inventoryItemRepository;
-        private readonly ILocationRepository _locationRepository;
+        private readonly IWarehouseRepository _locationRepository;
 
-        public InventoryItemService(IInventoryItemRepository inventoryItemRepository, ILocationRepository locationRepository)
+        public InventoryItemService(IInventoryItemRepository inventoryItemRepository, IWarehouseRepository locationRepository)
         {
             _inventoryItemRepository = inventoryItemRepository;
             _locationRepository = locationRepository;
