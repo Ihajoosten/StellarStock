@@ -26,7 +26,8 @@ namespace StellarStock.Infrastructure.Data.Identity
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(message: ex.Message);
+                _logger.LogCritical(message: $"Message :: {ex.Message}");
+                _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
             }
 
             // Seed users
@@ -36,7 +37,8 @@ namespace StellarStock.Infrastructure.Data.Identity
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(message: ex.Message);
+                _logger.LogCritical(message: $"Message :: {ex.Message}");
+                _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
             }
         }
 
@@ -44,57 +46,111 @@ namespace StellarStock.Infrastructure.Data.Identity
         {
             if (!await _roleManager.RoleExistsAsync("Admin"))
             {
-                var adminRole = new IdentityRole("Admin");
-                await _roleManager.CreateAsync(adminRole);
+                try
+                {
+                    var adminRole = new IdentityRole("Admin");
+                    await _roleManager.CreateAsync(adminRole);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(message: $"Message :: {ex.Message}");
+                    _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
+                }
             }
 
             if (!await _roleManager.RoleExistsAsync("Guest"))
             {
-                var guestRole = new IdentityRole("Guest");
-                await _roleManager.CreateAsync(guestRole);
+                try
+                {
+                    var guestRole = new IdentityRole("Guest");
+                    await _roleManager.CreateAsync(guestRole);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(message: $"Message :: {ex.Message}");
+                    _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
+                }
             }
         }
 
         private async Task SeedUsersAsync()
         {
-            if (await _userManager.FindByEmailAsync("lhajoosten@stellarstock.com") == null)
+            var adminuser = await _userManager.FindByNameAsync("lhajoosten@stellarstock.com");
+            var guestUser = await _userManager.FindByNameAsync("guest@stellarstock.com");
+
+            if (adminuser == null)
             {
-                var adminUser = new ApplicationUser
+                var admin = new ApplicationUser
                 {
                     UserName = "lhajoosten@stellarstock.com",
                     Email = "lhajoosten@stellarstock.com",
-                    PhoneNumber = "1234567890",
                 };
-
-                var result = await _userManager.CreateAsync(adminUser, "YourSecurePassword");
-
-                if (result.Succeeded)
+                try
                 {
-                    await _userManager.AddToRoleAsync(adminUser, "Admin");
+                    var result = await _userManager.CreateAsync(admin, "AdminP@ssw0rd");
+
+                    if (result.Succeeded)
+                    {
+                        try
+                        {
+                            await _userManager.AddToRoleAsync(admin, "Admin");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogCritical(message: $"Message :: {ex.Message}");
+                            _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
+                        }
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            _logger.LogWarning(message: $"Error: {error.Description}");
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogWarning(message: "Could not create new User");
+                    _logger.LogCritical(message: $"Message :: {ex.Message}");
+                    _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
                 }
             }
-            if (await _userManager.FindByEmailAsync("guest@stellarstock.com") == null)
+            if (guestUser == null)
             {
-                var guestUser = new ApplicationUser
+                var guest = new ApplicationUser
                 {
                     UserName = "guest@stellarstock.com",
                     Email = "guest@stellarstock.com",
-                    PhoneNumber = "1234567890",
                 };
 
-                var result = await _userManager.CreateAsync(guestUser, "YourSecurePassword");
+                try
+                {
+                    var result = await _userManager.CreateAsync(guest, "GuestP@ssw0rd");
 
-                if (result.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(guestUser, "Guest");
+                    if (result.Succeeded)
+                    {
+                        try
+                        {
+                            await _userManager.AddToRoleAsync(guest, "Guest");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogCritical(message: $"Message :: {ex.Message}");
+                            _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
+                        }
+                    }
+                    else
+                    {
+                        foreach (var error in result.Errors)
+                        {
+                            _logger.LogWarning(message: $"Error: {error.Description}");
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogWarning(message: "Could not create new User");
+                    _logger.LogCritical(message: $"Message :: {ex.Message}");
+                    _logger.LogCritical(message: $"Stacktrade :: {ex.StackTrace}");
                 }
             }
         }

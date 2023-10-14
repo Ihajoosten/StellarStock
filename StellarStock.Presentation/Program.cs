@@ -24,6 +24,15 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddMicrosoftI
         .EnableTokenAcquisitionToCallDownstreamApi().AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph")).AddInMemoryTokenCaches();
 services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
 
+services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+});
+
 // Infastructure Database Dependencies
 services.AddTransient<IdentityDataSeeder>();
 services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
