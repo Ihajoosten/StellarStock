@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StellarStock.Domain.Repositories.Base;
 
-namespace StellarStock.Infrastructure.Repositories.Interfaces
+namespace StellarStock.Infrastructure.Data.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {

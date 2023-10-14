@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StellarStock.Domain.Repositories.Base;
-using StellarStock.Infrastructure.Repositories.Interfaces;
+using StellarStock.Infrastructure.Data.Interfaces;
 
 namespace StellarStock.Infrastructure.Repositories.Base
 {
