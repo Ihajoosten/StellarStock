@@ -2,6 +2,7 @@
 {
     public class GetTopPopularItemsQuery : IQuery<InventoryItem>
     {
-        public int Count { get; set; }
+        public int MinScore { get; set; }
+        public int MaxScore { get; set; }
     }
 }

@@ -26,34 +26,34 @@ namespace StellarStock.Infrastructure.Repositories
             }
         }
 
-        public async Task<IEnumerable<Supplier>> GetSuppliersByCityAsync(string cityId)
+        public async Task<IEnumerable<Supplier>> GetSuppliersByCityAsync(string city)
         {
             try
             {
                 var suppliers = await _unitOfWork.GetRepository<Supplier>()!.GetAllAsync();
-                var suppliersByCity = suppliers!.Where(supplier => supplier.Address.City == cityId).ToList();
-                _logger.LogInformation($"Retrieved {suppliersByCity.Count} suppliers by city '{cityId}'");
+                var suppliersByCity = suppliers!.Where(supplier => supplier.Address.City == city).ToList();
+                _logger.LogInformation($"Retrieved {suppliersByCity.Count} suppliers by city '{city}'");
                 return suppliersByCity;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error while retrieving suppliers by city '{cityId}'");
+                _logger.LogError(ex, $"Error while retrieving suppliers by city '{city}'");
                 throw;
             }
         }
 
-        public async Task<IEnumerable<Supplier>> GetSuppliersByRegionAsync(string regionId)
+        public async Task<IEnumerable<Supplier>> GetSuppliersByRegionAsync(string region)
         {
             try
             {
                 var suppliers = await _unitOfWork.GetRepository<Supplier>()!.GetAllAsync();
-                var suppliersByRegion = suppliers!.Where(supplier => supplier.Address.Region == regionId).ToList();
-                _logger.LogInformation($"Retrieved {suppliersByRegion.Count} suppliers by region '{regionId}'");
+                var suppliersByRegion = suppliers!.Where(supplier => supplier.Address.Region == region).ToList();
+                _logger.LogInformation($"Retrieved {suppliersByRegion.Count} suppliers by region '{region}'");
                 return suppliersByRegion;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error while retrieving suppliers by region '{regionId}'");
+                _logger.LogError(ex, $"Error while retrieving suppliers by region '{region}'");
                 throw;
             }
         }

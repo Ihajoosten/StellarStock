@@ -26,6 +26,22 @@ namespace StellarStock.Infrastructure.Repositories
             }
         }
 
+        public async Task<IEnumerable<Warehouse>> GetWarehousesByRegionAsync(string region)
+        {
+            try
+            {
+                var warehouses = await _unitOfWork.GetRepository<Warehouse>()!.GetAllAsync();
+                var warehousesByRegion = warehouses!.Where(warehouse => warehouse.Address.Region == region).ToList();
+                _logger.LogInformation($"Retrieved {warehousesByRegion.Count} warehouses by region '{region}'");
+                return warehousesByRegion;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while retrieving warehouses by region '{region}'");
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<Warehouse>> GetOpenedWarehouses()
         {
             try

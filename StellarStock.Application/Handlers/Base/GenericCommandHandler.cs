@@ -1,67 +1,81 @@
 ﻿namespace StellarStock.Application.Handlers.Base
 {
-    public class GenericCommandHandler<TCommand> : IGenericCommandHandler<TCommand> where TCommand : ICommand
+    public class GenericCommandHandler<TCommand, TEntity> : IGenericCommandHandler<TCommand, TEntity> where TCommand : ICommand where TEntity : class
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IGenericRepository<TEntity> _repository;
 
-        public GenericCommandHandler(IUnitOfWork unitOfWork)
+        public GenericCommandHandler(IGenericRepository<TEntity> repository)
         {
-            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+            _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         }
 
-        public async Task HandleAsync(TCommand command)
+        public async Task HandleAsync(TCommand command, TEntity entity)
         {
-            switch (command)
+            switch (entity)
             {
-                // Inventory Item Commands
-                case CreateInventoryItemCommand createInventoryItemCommand:
-                    await HandleCreateInventoryItemAsync(createInventoryItemCommand);
+                case InventoryItem:
+                    switch (command)
+                    {
+                        // Inventory Item Commands
+                        case CreateInventoryItemCommand createInventoryItemCommand:
+                            await HandleCreateInventoryItemAsync(createInventoryItemCommand);
+                            break;
+                        case UpdateInventoryItemCommand updateInventoryItemCommand:
+                            await HandleUpdateInventoryItemAsync(updateInventoryItemCommand);
+                            break;
+                        case DeleteInventoryItemCommand deleteInventoryItemCommand:
+                            await HandleDeleteInventoryItemAsync(deleteInventoryItemCommand);
+                            break;
+                        default: throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
+                    };
                     break;
-                case UpdateInventoryItemCommand updateInventoryItemCommand:
-                    await HandleUpdateInventoryItemAsync(updateInventoryItemCommand);
+                case Supplier:
+                    switch (command)
+                    {
+                        // Supplier Commands
+                        case CreateSupplierCommand createSupplierCommand:
+                            await HandleCreateSupplierAsync(createSupplierCommand);
+                            break;
+                        case UpdateSupplierCommand updateSupplierCommand:
+                            await HandleUpdateSupplierAsync(updateSupplierCommand);
+                            break;
+                        case DeleteSupplierCommand deleteSupplierCommand:
+                            await HandleDeleteSupplierAsync(deleteSupplierCommand);
+                            break;
+                        case ActivateSupplierCommand activateSupplierCommand:
+                            await HandleActivateSupplierAsync(activateSupplierCommand);
+                            break;
+                        case DeactivateSupplierCommand deactivateSupplierCommand:
+                            await HandleDeactivateSupplierAsync(deactivateSupplierCommand);
+                            break;
+                    };
                     break;
-                case DeleteInventoryItemCommand deleteInventoryItemCommand:
-                    await HandleDeleteInventoryItemAsync(deleteInventoryItemCommand);
+                case Warehouse:
+                    switch (command)
+                    {
+                        // Warehouse Commands
+                        case CreateWarehouseCommand createWarehouseCommand:
+                            await HandleCreateWarehouseAsync(createWarehouseCommand);
+                            break;
+                        case UpdateWarehouseCommand updateWarehouseCommand:
+                            await HandleUpdateWarehouseAsync(updateWarehouseCommand);
+                            break;
+                        case DeleteWarehouseCommand deleteWarehouseCommand:
+                            await HandleDeleteWarehouseAsync(deleteWarehouseCommand);
+                            break;
+                        case CloseWarehouseCommand closeWarehouseCommand:
+                            await HandleCloseWarehouseAsync(closeWarehouseCommand);
+                            break;
+                        case ReopenWarehouseCommand reopenWarehouseCommand:
+                            await HandleReopenWarehouseAsync(reopenWarehouseCommand);
+                            break;
+                        case MoveWarehouseCommand moveWarehouseCommand:
+                            await HandleMoveWarehouseAsync(moveWarehouseCommand);
+                            break;
+                    };
                     break;
-
-                // Supplier Commands
-                case CreateSupplierCommand createSupplierCommand:
-                    await HandleCreateSupplierAsync(createSupplierCommand);
-                    break;
-                case UpdateSupplierCommand updateSupplierCommand:
-                    await HandleUpdateSupplierAsync(updateSupplierCommand);
-                    break;
-                case DeleteSupplierCommand deleteSupplierCommand:
-                    await HandleDeleteSupplierAsync(deleteSupplierCommand);
-                    break;
-                case ActivateSupplierCommand activateSupplierCommand:
-                    await HandleActivateSupplierAsync(activateSupplierCommand);
-                    break;
-                case DeactivateSupplierCommand deactivateSupplierCommand:
-                    await HandleDeactivateSupplierAsync(deactivateSupplierCommand);
-                    break;
-
-                // Warehouse Commands
-                case CreateWarehouseCommand createWarehouseCommand:
-                    await HandleCreateWarehouseAsync(createWarehouseCommand);
-                    break;
-                case UpdateWarehouseCommand updateWarehouseCommand:
-                    await HandleUpdateWarehouseAsync(updateWarehouseCommand);
-                    break;
-                case DeleteWarehouseCommand deleteWarehouseCommand:
-                    await HandleDeleteWarehouseAsync(deleteWarehouseCommand);
-                    break;
-                case CloseWarehouseCommand closeWarehouseCommand:
-                    await HandleCloseWarehouseAsync(closeWarehouseCommand);
-                    break;
-                case ReopenWarehouseCommand reopenWarehouseCommand:
-                    await HandleReopenWarehouseAsync(reopenWarehouseCommand);
-                    break;
-                case MoveWarehouseCommand moveWarehouseCommand:
-                    await HandleMoveWarehouseAsync(moveWarehouseCommand);
-                    break;
-                default: throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
-            };
+                default: throw new ArgumentException($"Unsupported Entity type: {typeof(TEntity)}");
+            }
         }
 
         // Inventory Item handlers
@@ -84,12 +98,11 @@
                 UpdatedAt = DateTime.UtcNow,
             };
 
-            await _unitOfWork.GetRepository<InventoryItem>()!.AddAsync(item);
-            await _unitOfWork.SaveChangesAsync();
+            await _repository.AddAsync(item as TEntity);
         }
         private async Task HandleUpdateInventoryItemAsync(UpdateInventoryItemCommand updateCommand)
         {
-            var item = await _unitOfWork.GetRepository<InventoryItem>()!.GetByIdAsync(updateCommand.InventoryItemId);
+            var item = await _repository.GetByIdAsync(updateCommand.InventoryItemId) as InventoryItem;
             if (item != null)
             {
                 item.Name = updateCommand.NewName;
@@ -100,17 +113,15 @@
                 item.Money = updateCommand.NewMoney;
                 item.UpdatedAt = DateTime.UtcNow;
 
-                await _unitOfWork.GetRepository<InventoryItem>()!.UpdateAsync(item);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(item as TEntity);
             }
         }
         private async Task HandleDeleteInventoryItemAsync(DeleteInventoryItemCommand deleteCommand)
         {
-            var item = await _unitOfWork.GetRepository<InventoryItem>()!.GetByIdAsync(deleteCommand.Id);
+            var item = await _repository.GetByIdAsync(deleteCommand.Id) as InventoryItem;
             if (item != null)
             {
-                await _unitOfWork.GetRepository<InventoryItem>()!.RemoveAsync(item.Id);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.RemoveAsync(item.Id);
             }
         }
 
@@ -130,12 +141,11 @@
                 UpdatedAt = DateTime.UtcNow,
             };
 
-            await _unitOfWork.GetRepository<Supplier>()!.AddAsync(supplier);
-            await _unitOfWork.SaveChangesAsync();
+            await _repository.AddAsync(supplier as TEntity);
         }
         private async Task HandleUpdateSupplierAsync(UpdateSupplierCommand updateSupplierCommand)
         {
-            var supplier = await _unitOfWork.GetRepository<Supplier>()!.GetByIdAsync(updateSupplierCommand.SupplierId);
+            var supplier = await _repository.GetByIdAsync(updateSupplierCommand.SupplierId) as Supplier;
             if (supplier != null)
             {
                 supplier.Name = updateSupplierCommand.NewName;
@@ -144,41 +154,37 @@
                 supplier.Address = updateSupplierCommand.NewAddress;
                 supplier.UpdatedAt = DateTime.UtcNow;
 
-                await _unitOfWork.GetRepository<Supplier>()!.UpdateAsync(supplier);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(supplier as TEntity);
             }
         }
         private async Task HandleDeleteSupplierAsync(DeleteSupplierCommand deleteSupplierCommand)
         {
-            var supplier = await _unitOfWork.GetRepository<Supplier>()!.GetByIdAsync(deleteSupplierCommand.Id);
+            var supplier = await _repository.GetByIdAsync(deleteSupplierCommand.Id) as Supplier;
             if (supplier != null)
             {
-                await _unitOfWork.GetRepository<Supplier>()!.RemoveAsync(supplier.Id);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.RemoveAsync(supplier.Id);
             }
         }
-        private async Task HandleActivateSupplierAsync(ActivateSupplierCommand activateSupplierCommand)
+        private async Task HandleActivateSupplierAsync(ActivateSupplierCommand deactivateSupplierCommand)
         {
-            var supplier = await _unitOfWork.GetRepository<Supplier>()!.GetByIdAsync(activateSupplierCommand.SupplierId);
+            var supplier = await _repository.GetByIdAsync(deactivateSupplierCommand.SupplierId) as Supplier;
             if (supplier != null)
             {
                 supplier.IsActive = true;
                 supplier.UpdatedAt = DateTime.Now;
 
-                await _unitOfWork.GetRepository<Supplier>()!.UpdateAsync(supplier);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(supplier as TEntity);
             }
         }
         private async Task HandleDeactivateSupplierAsync(DeactivateSupplierCommand deactivateSupplierCommand)
         {
-            var supplier = await _unitOfWork.GetRepository<Supplier>()!.GetByIdAsync(deactivateSupplierCommand.SupplierId);
+            var supplier = await _repository.GetByIdAsync(deactivateSupplierCommand.SupplierId) as Supplier;
             if (supplier != null)
             {
                 supplier.IsActive = false;
                 supplier.UpdatedAt = DateTime.Now;
 
-                await _unitOfWork.GetRepository<Supplier>()!.UpdateAsync(supplier);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(supplier as TEntity);
             }
         }
 
@@ -196,12 +202,11 @@
                 UpdatedAt = DateTime.UtcNow,
             };
 
-            await _unitOfWork.GetRepository<Warehouse>()!.AddAsync(warehouse);
-            await _unitOfWork.SaveChangesAsync();
+            await _repository.AddAsync(warehouse as TEntity);
         }
         private async Task HandleUpdateWarehouseAsync(UpdateWarehouseCommand updateWarehouseCommand)
         {
-            var warehouse = await _unitOfWork.GetRepository<Warehouse>()!.GetByIdAsync(updateWarehouseCommand.WarehouseId);
+            var warehouse = await _repository.GetByIdAsync(updateWarehouseCommand.WarehouseId) as Warehouse;
             if (warehouse != null)
             {
                 warehouse.Name = updateWarehouseCommand.NewName;
@@ -209,46 +214,42 @@
                 warehouse.Address = updateWarehouseCommand.NewAddress;
                 warehouse.UpdatedAt = DateTime.UtcNow;
 
-                await _unitOfWork.GetRepository<Warehouse>()!.UpdateAsync(warehouse);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(warehouse as TEntity);
             }
         }
         private async Task HandleDeleteWarehouseAsync(DeleteWarehouseCommand deleteWarehouseCommand)
         {
-            var warehouse = await _unitOfWork.GetRepository<Warehouse>()!.GetByIdAsync(deleteWarehouseCommand.WarehouseId);
+            var warehouse = await _repository.GetByIdAsync(deleteWarehouseCommand.WarehouseId) as Warehouse;
             if (warehouse != null)
             {
-                await _unitOfWork.GetRepository<Warehouse>()!.RemoveAsync(warehouse.Id);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.RemoveAsync(warehouse.Id);
             }
         }
         private async Task HandleCloseWarehouseAsync(CloseWarehouseCommand closeWarehouseCommand)
         {
-            var warehouse = await _unitOfWork.GetRepository<Warehouse>()!.GetByIdAsync(closeWarehouseCommand.WarehouseId);
+            var warehouse = await _repository.GetByIdAsync(closeWarehouseCommand.WarehouseId) as Warehouse;
             if (warehouse != null)
             {
                 warehouse.IsOpen = false;
                 warehouse.UpdatedAt = DateTime.Now;
 
-                await _unitOfWork.GetRepository<Warehouse>()!.UpdateAsync(warehouse);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(warehouse as TEntity);
             }
         }
         private async Task HandleReopenWarehouseAsync(ReopenWarehouseCommand reopenWarehouseCommand)
         {
-            var warehouse = await _unitOfWork.GetRepository<Warehouse>()!.GetByIdAsync(reopenWarehouseCommand.WarehouseId);
+            var warehouse = await _repository.GetByIdAsync(reopenWarehouseCommand.WarehouseId) as Warehouse;
             if (warehouse != null)
             {
                 warehouse.IsOpen = true;
                 warehouse.UpdatedAt = DateTime.Now;
 
-                await _unitOfWork.GetRepository<Warehouse>()!.UpdateAsync(warehouse);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(warehouse as TEntity);
             }
         }
         private async Task HandleMoveWarehouseAsync(MoveWarehouseCommand moveWarehouseCommand)
         {
-            var warehouse = await _unitOfWork.GetRepository<Warehouse>()!.GetByIdAsync(moveWarehouseCommand.WarehouseId);
+            var warehouse = await _repository.GetByIdAsync(moveWarehouseCommand.WarehouseId) as Warehouse;
             if (warehouse != null)
             {
                 warehouse.Address.Street = moveWarehouseCommand.NewAddress;
@@ -260,8 +261,7 @@
                 warehouse.IsOpen = true;
                 warehouse.UpdatedAt = DateTime.Now;
 
-                await _unitOfWork.GetRepository<Warehouse>()!.UpdateAsync(warehouse);
-                await _unitOfWork.SaveChangesAsync();
+                await _repository.UpdateAsync(warehouse as TEntity);
             }
         }
     }
