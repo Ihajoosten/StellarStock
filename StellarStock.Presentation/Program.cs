@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
+using Serilog;
 using StellarStock.Domain.Repositories;
 using StellarStock.Domain.Repositories.Base;
 using StellarStock.Domain.Services;
 using StellarStock.Domain.Services.Interfaces;
 using StellarStock.Infrastructure.Data;
 using StellarStock.Infrastructure.Data.Interfaces;
+using StellarStock.Infrastructure.Logging;
 using StellarStock.Infrastructure.Repositories;
 using StellarStock.Infrastructure.Repositories.Base;
 
@@ -25,6 +27,10 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("StellarStockApiConnection")));
 
+// Configure logging with Serilog
+LoggingConfig.Configure();
+services.AddLogging(builder => builder.AddSerilog());
+
 // Application Service Dependencies
 /*services.AddScoped<IAppInventoryItemService, AppInventoryItemService>();
 services.AddScoped<IAppWarehouseService, AppWarehouseService>();
@@ -35,6 +41,7 @@ services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));
 services.AddScoped<IInventoryItemRepository, EFInventoryItemRepository>();
 services.AddScoped<IWarehouseRepository, EFWarehouseRepository>();
 services.AddScoped<ISupplierRepository, EFSupplierRepository>();
+services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Domain Service Dependencies
 services.AddScoped<IInventoryItemService, InventoryItemService>();
