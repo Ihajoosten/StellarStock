@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 using StellarStock.Domain.Repositories.Base;
 using StellarStock.Infrastructure.Data.Interfaces;
 using StellarStock.Infrastructure.Repositories.Base;
@@ -12,7 +13,6 @@ namespace StellarStock.Infrastructure.Data
         private readonly IApplicationDbContext _context;
         private Dictionary<Type, object> _repositories;
         private IDbContextTransaction _transaction;
-
         public UnitOfWork(IApplicationDbContext context)
         {
             _context = context;
@@ -26,7 +26,7 @@ namespace StellarStock.Infrastructure.Data
                 return _repositories[typeof(T)] as IGenericRepository<T>;
             }
 
-            var repository = new EFGenericRepository<T>(this);
+            var repository = new EFGenericRepository<T>(unitOfWork: this, logger: (ILogger<EFGenericRepository<T>>)_repositories[typeof(T)]);
             _repositories[typeof(T)] = repository;
             return repository;
         }

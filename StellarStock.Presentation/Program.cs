@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Serilog;
@@ -7,6 +8,8 @@ using StellarStock.Domain.Repositories.Base;
 using StellarStock.Domain.Services;
 using StellarStock.Domain.Services.Interfaces;
 using StellarStock.Infrastructure.Data;
+using StellarStock.Infrastructure.Data.Identity;
+using StellarStock.Infrastructure.Data.Identity.Model;
 using StellarStock.Infrastructure.Data.Interfaces;
 using StellarStock.Infrastructure.Logging;
 using StellarStock.Infrastructure.Repositories;
@@ -17,15 +20,15 @@ var services = builder.Services;
 var configuration = builder.Configuration;
 
 // Identity Service
-services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
-        .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
-            .AddInMemoryTokenCaches();
+services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
+        .EnableTokenAcquisitionToCallDownstreamApi().AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph")).AddInMemoryTokenCaches();
+services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
 
 // Infastructure Database Dependencies
+services.AddTransient<IdentityDataSeeder>();
 services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("StellarStockApiConnection")));
+services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
 // Configure logging with Serilog
 LoggingConfig.Configure();
@@ -60,6 +63,22 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Seed Identity Data
+using (var scope = app.Services.CreateScope())
+{
+    var appServices = scope.ServiceProvider;
+    try
+    {
+        var identityDataSeeder = appServices.GetRequiredService<IdentityDataSeeder>();
+        await identityDataSeeder.SeedDataAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = appServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding identity data.");
+    }
 }
 
 app.UseHttpsRedirection();

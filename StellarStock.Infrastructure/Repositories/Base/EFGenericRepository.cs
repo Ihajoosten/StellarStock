@@ -16,7 +16,7 @@ namespace StellarStock.Infrastructure.Repositories.Base
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<IEnumerable<T>?> GetAllAsync() 
+        public async Task<IEnumerable<T>?> GetAllAsync()
         {
             try
             {
