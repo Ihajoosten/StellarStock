@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using StellarStock.Domain.Entities;
 
 namespace StellarStock.Infrastructure.Data.Interfaces
@@ -9,6 +10,8 @@ namespace StellarStock.Infrastructure.Data.Interfaces
         DbSet<InventoryItem> InventoryItems { get; set; }
         DbSet<Warehouse> Warehouses { get; set; }
         DbSet<Supplier> Suppliers { get; set; }
+
+        DatabaseFacade Database { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         DbSet<T> Set<T>() where T : class;

@@ -1,33 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StellarStock.Domain.Repositories.Base;
-using StellarStock.Infrastructure.Data.Interfaces;
+using StellarStock.Infrastructure.Repositories.Interfaces;
 
 namespace StellarStock.Infrastructure.Repositories.Base
 {
     public class EFGenericRepository<T> : IGenericRepository<T> where T : class
     {
-        protected readonly IApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public EFGenericRepository(IApplicationDbContext productContext)
+        public EFGenericRepository(IUnitOfWork unitOfWork)
         {
-            _context = productContext ?? throw new ArgumentNullException(nameof(productContext));
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         }
 
-        public async Task<IEnumerable<T>?> GetAllAsync() => await _context.Set<T>().ToListAsync();
+        public async Task<IEnumerable<T>?> GetAllAsync() => await _unitOfWork.Set<T>().ToListAsync();
 
-        public async Task<T?> GetByIdAsync(string id) => await _context.Set<T>().FindAsync(id);
+        public async Task<T?> GetByIdAsync(string id) => await _unitOfWork.Set<T>().FindAsync(id);
 
         public async Task<bool> AddAsync(T entity)
         {
-            await _context.Set<T>().AddAsync(entity);
-            var result = await _context.SaveChangesAsync();
+            await _unitOfWork.Set<T>().AddAsync(entity);
+            var result = await _unitOfWork.SaveChangesAsync();
             return result > 0;
         }
 
         public async Task<bool> UpdateAsync(T entity)
         {
-            _context.Entry(entity).State = EntityState.Modified;
-            var result = await _context.SaveChangesAsync();
+            _unitOfWork.Entry(entity).State = EntityState.Modified;
+            var result = await _unitOfWork.SaveChangesAsync();
             return result > 0;
         }
 
@@ -36,9 +36,9 @@ namespace StellarStock.Infrastructure.Repositories.Base
             var entity = await GetByIdAsync(id);
             if (entity == null) return false;
 
-            _context.Set<T>().Remove(entity);
+            _unitOfWork.Set<T>().Remove(entity);
             
-            var result = await _context.SaveChangesAsync();
+            var result = await _unitOfWork.SaveChangesAsync();
             return result > 0;
         }
     }

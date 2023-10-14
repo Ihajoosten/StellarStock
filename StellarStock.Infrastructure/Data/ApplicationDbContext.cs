@@ -17,7 +17,6 @@ namespace StellarStock.Infrastructure.Data
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            // Implement any additional logic before saving changes if needed
             return base.SaveChangesAsync(cancellationToken);
         }
 
