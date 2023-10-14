@@ -8,8 +8,6 @@ EXPOSE 443
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["StellarStock.Presentation/StellarStock.Presentation.csproj", "StellarStock.Presentation/"]
-COPY ["StellarStock.Infrastructure/StellarStock.Infrastructure.csproj", "StellarStock.Infrastructure/"]
-COPY ["StellarStock.Domain/StellarStock.Domain.csproj", "StellarStock.Domain/"]
 RUN dotnet restore "StellarStock.Presentation/StellarStock.Presentation.csproj"
 COPY . .
 WORKDIR "/src/StellarStock.Presentation"
