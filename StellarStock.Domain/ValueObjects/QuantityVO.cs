@@ -1,8 +1,10 @@
-﻿namespace StellarStock.Domain.ValueObjects
+﻿using StellarStock.Domain.Entities.Base;
+
+namespace StellarStock.Domain.ValueObjects
 {
     public class QuantityVO
     {
-        public int Value { get; }
+        public int Value { get; set; }
 
         public QuantityVO(int value)
         {

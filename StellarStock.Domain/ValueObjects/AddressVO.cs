@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StellarStock.Domain.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace StellarStock.Domain.ValueObjects
 {

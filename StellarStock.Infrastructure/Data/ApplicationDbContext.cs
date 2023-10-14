@@ -45,6 +45,61 @@ namespace StellarStock.Infrastructure.Data
                 .WithMany(supplier => supplier.StockedItems)
                 .HasForeignKey(item => item.WarehouseId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<InventoryItem>(entity =>
+            {
+                entity.OwnsOne(e => e.ProductCode, productCode =>
+                {
+                    productCode.Property(a => a.Code).HasColumnName("Code");
+                });
+
+                entity.OwnsOne(e => e.Quantity, quantity =>
+                {
+                    quantity.Property(a => a.Value).HasColumnName("Value");
+                });
+
+                entity.OwnsOne(e => e.Money, money =>
+                {
+                    money.Property(a => a.Amount).HasColumnName("Amount");
+                    money.Property(a => a.Currency).HasColumnName("Currency");
+                });
+
+                entity.OwnsOne(e => e.ValidityPeriod, validityPeriod =>
+                {
+                    validityPeriod.Property(a => a.StartDate).HasColumnName("StartDate");
+                    validityPeriod.Property(a => a.EndDate).HasColumnName("EndDate");
+                });
+            });
+
+            modelBuilder.Entity<Warehouse>(entity =>
+            {
+                entity.OwnsOne(e => e.Address, address =>
+                {
+                    address.Property(a => a.Street).HasColumnName("Street");
+                    address.Property(a => a.City).HasColumnName("City");
+                    address.Property(a => a.City).HasColumnName("Region");
+                    address.Property(a => a.City).HasColumnName("PostalCode");
+                    address.Property(a => a.City).HasColumnName("Country");
+                });
+            });
+
+            modelBuilder.Entity<Supplier>(entity =>
+            {
+                entity.OwnsOne(e => e.Address, address =>
+                {
+                    address.Property(a => a.Street).HasColumnName("Street");
+                    address.Property(a => a.City).HasColumnName("City");
+                    address.Property(a => a.City).HasColumnName("Region");
+                    address.Property(a => a.City).HasColumnName("PostalCode");
+                    address.Property(a => a.City).HasColumnName("Country");
+                });
+
+                entity.OwnsOne(e => e.ValidityPeriod, validityPeriod =>
+                {
+                    validityPeriod.Property(a => a.StartDate).HasColumnName("StartDate");
+                    validityPeriod.Property(a => a.EndDate).HasColumnName("EndDate");
+                });
+            });
         }
     }
 }

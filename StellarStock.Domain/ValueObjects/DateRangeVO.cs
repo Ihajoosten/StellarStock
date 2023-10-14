@@ -1,9 +1,11 @@
-﻿namespace StellarStock.Domain.ValueObjects
+﻿using StellarStock.Domain.Entities.Base;
+
+namespace StellarStock.Domain.ValueObjects
 {
     public class DateRangeVO
     {
-        public DateTime StartDate { get; }
-        public DateTime EndDate { get; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         public DateRangeVO(DateTime startDate, DateTime endDate)
         {
