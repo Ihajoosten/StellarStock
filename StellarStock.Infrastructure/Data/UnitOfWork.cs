@@ -1,12 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
-using StellarStock.Domain.Repositories.Base;
-using StellarStock.Infrastructure.Data.Interfaces;
-using StellarStock.Infrastructure.Repositories.Base;
-
-namespace StellarStock.Infrastructure.Data
+﻿namespace StellarStock.Infrastructure.Data
 {
     public class UnitOfWork : IUnitOfWork
     {

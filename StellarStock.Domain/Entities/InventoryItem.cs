@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StellarStock.Domain.Entities.Base;
+﻿using StellarStock.Domain.Entities.Base;
 using StellarStock.Domain.ValueObjects;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

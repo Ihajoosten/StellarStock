@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using StellarStock.Infrastructure.Data.Identity.Model;
-
-namespace StellarStock.Infrastructure.Data.Identity
+﻿namespace StellarStock.Infrastructure.Data.Identity
 {
     public class IdentityDataSeeder
     {

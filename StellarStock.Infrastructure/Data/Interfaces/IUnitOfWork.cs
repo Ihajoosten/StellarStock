@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using StellarStock.Domain.Repositories.Base;
-
-namespace StellarStock.Infrastructure.Data.Interfaces
+﻿namespace StellarStock.Infrastructure.Data.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
