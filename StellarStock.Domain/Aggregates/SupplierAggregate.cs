@@ -1,7 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-using StellarStock.Domain.Events.SupplierEvents;
-using StellarStock.Domain.ValueObjects;
-
+﻿
 namespace StellarStock.Domain.Aggregates
 {
     public class SupplierAggregate

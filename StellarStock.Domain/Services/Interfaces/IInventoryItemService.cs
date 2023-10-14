@@ -1,6 +1,4 @@
-﻿using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Domain.Services.Interfaces
+﻿namespace StellarStock.Domain.Services.Interfaces
 {
     public interface IInventoryItemService
     {

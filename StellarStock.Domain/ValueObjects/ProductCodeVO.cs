@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace StellarStock.Domain.ValueObjects
+﻿namespace StellarStock.Domain.ValueObjects
 {
     public class ProductCodeVO
     {

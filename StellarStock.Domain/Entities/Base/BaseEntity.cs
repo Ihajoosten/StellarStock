@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace StellarStock.Domain.Entities.Base
+﻿namespace StellarStock.Domain.Entities.Base
 {
     public class BaseEntity
     {

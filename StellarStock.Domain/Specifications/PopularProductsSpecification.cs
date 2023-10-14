@@ -1,7 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-using StellarStock.Domain.Specifications.Interfaces;
-
-namespace StellarStock.Domain.Specifications
+﻿namespace StellarStock.Domain.Specifications
 {
     public class PopularProductsSpecification : ISpecification<InventoryItem>
     {
