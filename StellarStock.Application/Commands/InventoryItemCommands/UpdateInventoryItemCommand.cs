@@ -1,9 +1,6 @@
-﻿using StellarStock.Domain.Entities;
-using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Application.Commands.InventoryItemCommands
+﻿namespace StellarStock.Application.Commands.InventoryItemCommands
 {
-    public class UpdateInventoryItemCommand
+    public class UpdateInventoryItemCommand : ICommand
     {
         public string InventoryItemId { get; set; }
         public string NewName { get; set; }

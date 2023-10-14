@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace StellarStock.Application.Commands.SupplierCommands
+﻿namespace StellarStock.Application.Commands.SupplierCommands
 {
-    public class ActivateSupplierCommand
+    public class ActivateSupplierCommand : ICommand
     {
         public string SupplierId { get; set; }
     }

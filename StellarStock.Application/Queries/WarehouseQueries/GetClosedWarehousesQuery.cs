@@ -1,4 +1,4 @@
 ﻿namespace StellarStock.Application.Queries.WarehouseQueries
 {
-    public class GetClosedWarehousesQuery { }
+    public class GetClosedWarehousesQuery : IQuery<Warehouse> { }
 }

@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Queries.SupplierQueries
 {
-    public class GetSupplierByIdQuery
+    public class GetSupplierByIdQuery : IQuery<Supplier>
     {
         public string SupplierId { get; set; }
     }

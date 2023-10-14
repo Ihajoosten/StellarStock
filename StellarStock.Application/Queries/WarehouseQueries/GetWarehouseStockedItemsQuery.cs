@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Queries.WarehouseQueries
 {
-    public class GetWarehouseStockedItemsQuery
+    public class GetWarehouseStockedItemsQuery : IQuery<Warehouse>
     {
         public string WarehouseId { get; set; }
     }

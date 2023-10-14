@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Commands.WarehouseCommands
 {
-    public class MoveWarehouseCommand
+    public class MoveWarehouseCommand : ICommand
     {
         public string WarehouseId { get; set; }
         public string NewAddress { get; set; }

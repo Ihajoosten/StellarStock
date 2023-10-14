@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Queries.SupplierQueries
 {
-    public class GetActiveSuppliersQuery
+    public class GetActiveSuppliersQuery : IQuery<Supplier>
     {
     }
 }

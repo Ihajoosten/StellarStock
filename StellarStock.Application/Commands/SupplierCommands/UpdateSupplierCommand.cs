@@ -1,8 +1,6 @@
-﻿using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Application.Commands.SupplierCommands
+﻿namespace StellarStock.Application.Commands.SupplierCommands
 {
-    public class UpdateSupplierCommand
+    public class UpdateSupplierCommand : ICommand
     {
         public string SupplierId { get; set; }
         public string NewName { get; set; }

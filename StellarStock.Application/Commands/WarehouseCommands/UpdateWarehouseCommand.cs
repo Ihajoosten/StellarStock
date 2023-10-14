@@ -1,8 +1,6 @@
-﻿using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Application.Commands.WarehouseCommands
+﻿namespace StellarStock.Application.Commands.WarehouseCommands
 {
-    public class UpdateWarehouseCommand
+    public class UpdateWarehouseCommand : ICommand
     {
         public string WarehouseId { get; set; }
         public string NewName { get; set; }

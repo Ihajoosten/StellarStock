@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Queries.SupplierQueries
 {
-    public class GetSuppliersWithValidityExpiringSoonQuery
+    public class GetSuppliersWithValidityExpiringSoonQuery : IQuery<Supplier>
     {
         public DateTime ExpirationDate { get; set; }
     }

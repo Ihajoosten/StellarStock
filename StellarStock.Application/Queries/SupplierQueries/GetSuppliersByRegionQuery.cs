@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Queries.SupplierQueries
 {
-    public class GetSuppliersByRegionQuery
+    public class GetSuppliersByRegionQuery : IQuery<Supplier>
     {
         public string RegionName { get; set; }
     }

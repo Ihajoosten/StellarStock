@@ -1,7 +1,7 @@
 ﻿namespace StellarStock.Application.Queries.InventoryItemQueries
 {
-    public class GetInventoryItemsWithValidityExpiringSoonQuery
+    public class GetInventoryItemsWithValidityExpiringSoonQuery : IQuery<InventoryItem>
     {
-        public DateTime ExpirationDate { get; set; 
+        public DateTime ExpirationDate { get; set; }
     }
 }
