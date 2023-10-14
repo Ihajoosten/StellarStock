@@ -6,7 +6,7 @@ namespace StellarStock.Infrastructure.Repositories.Base
 {
     public class EFGenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly IUnitOfWork _unitOfWork;
+        protected readonly IUnitOfWork _unitOfWork;
 
         public EFGenericRepository(IUnitOfWork unitOfWork)
         {
