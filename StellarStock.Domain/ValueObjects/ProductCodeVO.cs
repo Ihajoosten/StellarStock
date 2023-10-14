@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using StellarStock.Domain.Entities.Base;
+using System.ComponentModel.DataAnnotations;
 
 namespace StellarStock.Domain.ValueObjects
 {
@@ -6,7 +7,7 @@ namespace StellarStock.Domain.ValueObjects
     {
         [Required(ErrorMessage = "Code is required.")]
         [MaxLength(25, ErrorMessage = "Code cannot exceed 25 characters.")]
-        public string Code { get; }
+        public string Code { get; set; }
 
         public ProductCodeVO(string code)
         {
