@@ -19,3 +19,5 @@ global using StellarStock.Domain.Entities;
 global using StellarStock.Domain.Repositories;
 global using StellarStock.Domain.Repositories.Base;
 global using StellarStock.Domain.ValueObjects;
+global using StellarStock.Domain.Aggregates;
+

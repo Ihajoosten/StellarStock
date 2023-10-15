@@ -3,7 +3,7 @@ namespace StellarStock.Domain.Aggregates
 {
     public class SupplierAggregate
     {
-        public Supplier Supplier { get; private set; }
+        public Supplier? Supplier { get; private set; }
 
         public event EventHandler<SupplierActivatedEvent> SupplierActivated;
         public event EventHandler<SupplierDeactivatedEvent> SupplierDeactivated;
@@ -13,7 +13,8 @@ namespace StellarStock.Domain.Aggregates
 
         public SupplierAggregate(Supplier? supplier)
         {
-            ValidateAndSetProperties(supplier);
+            Supplier = supplier;
+            //ValidateAndSetProperties(supplier);
         }
 
         private void ValidateAndSetProperties(Supplier? supplier)

@@ -1,4 +1,7 @@
-﻿namespace StellarStock.Application.Handlers.Base
+﻿using StellarStock.Application.Commands.WarehouseCommands;
+using StellarStock.Domain.Aggregates;
+
+namespace StellarStock.Application.Handlers.Base
 {
     public class GenericCommandHandler<TCommand, TEntity> : IGenericCommandHandler<TCommand, TEntity> where TCommand : ICommand where TEntity : class
     {
@@ -111,31 +114,28 @@
         }
 
         // Inventory Item handlers
-        private async Task HandleCreateInventoryItemAsync(CreateInventoryItemCommand createCommand)
+        private async Task HandleCreateInventoryItemAsync(CreateInventoryItemCommand command)
         {
             try
             {
-                var item = new InventoryItem
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = createCommand.Name,
-                    Description = createCommand.Description,
-                    Category = createCommand.Category,
-                    PopularityScore = createCommand.PopularityScore,
-                    ProductCode = createCommand.ProductCode,
-                    Quantity = createCommand.Quantity,
-                    Money = createCommand.Money,
-                    ValidityPeriod = createCommand.ValidityPeriod,
-                    WarehouseId = createCommand.WarehouseId,
-                    SupplierId = createCommand.SupplierId,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                };
+                var inventoryAggregate = new InventoryAggregate(null);
+                inventoryAggregate.CreateInventoryItem(
+                    command.Name,
+                    command.Description,
+                    command.Category,
+                    command.PopularityScore,
+                    command.ProductCode,
+                    command.Quantity,
+                    command.Money,
+                    command.WarehouseId,
+                    command.SupplierId,
+                    command.ValidityPeriod
+                );
 
-                await _repository.AddAsync(item as TEntity);
+                await _repository.AddAsync(inventoryAggregate.InventoryItem as TEntity);
 
                 // Log successful creation
-                _logger.LogInformation($"Inventory item created: {item.Id}");
+                _logger.LogInformation($"Inventory item created: {inventoryAggregate.InventoryItem.Id}");
             }
             catch (Exception ex)
             {
@@ -147,22 +147,24 @@
             }
         }
 
-        private async Task HandleUpdateInventoryItemAsync(UpdateInventoryItemCommand updateCommand)
+        private async Task HandleUpdateInventoryItemAsync(UpdateInventoryItemCommand command)
         {
             try
             {
-                var item = await _repository.GetByIdAsync(updateCommand.InventoryItemId) as InventoryItem;
-                if (item != null)
+                if (await _repository.GetByIdAsync(command.InventoryItemId) is InventoryItem item)
                 {
-                    item.Name = updateCommand.NewName;
-                    item.Description = updateCommand.NewDescription;
-                    item.Category = updateCommand.NewCategory;
-                    item.ProductCode = updateCommand.NewProductCode;
-                    item.Quantity = updateCommand.NewQuantity;
-                    item.Money = updateCommand.NewMoney;
-                    item.UpdatedAt = DateTime.UtcNow;
+                    var itemAggregate = new InventoryAggregate(item);
+                    itemAggregate.UpdateItem(
+                        command.NewName,
+                        command.NewDescription,
+                        command.NewCategory,
+                        command.NewProductCode,
+                        command.NewPopularityScore,
+                        command.NewQuantity,
+                        command.NewMoney
+                        );
 
-                    await _repository.UpdateAsync(item as TEntity);
+                    await _repository.UpdateAsync(itemAggregate.InventoryItem as TEntity);
 
                     // Log successful update
                     _logger.LogInformation($"Inventory item updated: {item.Id}");
@@ -178,13 +180,17 @@
             }
         }
 
-        private async Task HandleDeleteInventoryItemAsync(DeleteInventoryItemCommand deleteCommand)
+        private async Task HandleDeleteInventoryItemAsync(DeleteInventoryItemCommand command)
         {
             try
             {
-                var item = await _repository.GetByIdAsync(deleteCommand.Id) as InventoryItem;
-                if (item != null)
+                //var item = await _repository.GetByIdAsync(command.Id) as InventoryItem;
+                if (await _repository.GetByIdAsync(command.Id) is InventoryItem item)
                 {
+                    var itemAggregate = new InventoryAggregate(item);
+
+                    itemAggregate.RemoveItem();
+
                     await _repository.RemoveAsync(item.Id);
 
                     // Log successful deletion
@@ -202,52 +208,54 @@
         }
 
         // Supplier handlers
-        private async Task HandleCreateSupplierAsync(CreateSupplierCommand createSupplierCommand)
+        private async Task HandleCreateSupplierAsync(CreateSupplierCommand command)
         {
             try
             {
-                var supplier = new Supplier
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = createSupplierCommand.Name,
-                    Phone = createSupplierCommand.Phone,
-                    ContactEmail = createSupplierCommand.ContactEmail,
-                    Address = createSupplierCommand.Address,
-                    IsActive = true,
-                    ValidityPeriod = createSupplierCommand.ValidityPeriod,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                };
+                var supplierAggregate = new SupplierAggregate(null);
+                supplierAggregate.CreateSupplier(command.Name, command.Phone, command.ContactEmail, command.Address, true, command.ValidityPeriod);
 
-                await _repository.AddAsync(supplier as TEntity);
+                await _repository.AddAsync(supplierAggregate.Supplier as TEntity);
+
+                // Log successful creation
+                _logger.LogInformation($"Supplier created: {supplierAggregate.Supplier.Id}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling CreateSupplierCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleCreateSupplierAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in CreateSupplierCommand");
             }
         }
 
-        private async Task HandleUpdateSupplierAsync(UpdateSupplierCommand updateSupplierCommand)
+        private async Task HandleUpdateSupplierAsync(UpdateSupplierCommand command)
         {
             try
             {
-                var supplier = await _repository.GetByIdAsync(updateSupplierCommand.SupplierId) as Supplier;
-                if (supplier != null)
+                if (await _repository.GetByIdAsync(command.SupplierId) is Supplier supplier)
                 {
-                    supplier.Name = updateSupplierCommand.NewName;
-                    supplier.Phone = updateSupplierCommand.NewPhone;
-                    supplier.ContactEmail = updateSupplierCommand.NewContactEmail;
-                    supplier.Address = updateSupplierCommand.NewAddress;
-                    supplier.UpdatedAt = DateTime.UtcNow;
+                    var supplierAggregate = new SupplierAggregate(supplier);
+                    supplierAggregate.UpdateSupplier(
+                        command.NewName,
+                        command.NewPhone,
+                        command.NewContactEmail,
+                        command.NewAddress);
 
                     await _repository.UpdateAsync(supplier as TEntity);
+
+                    // Log successful update
+                    _logger.LogInformation($"SUpplier updated: {supplier.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling UpdateSupplierCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleUpdateSupplierAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in UpdateSupplierCommand");
             }
         }
 
@@ -255,16 +263,22 @@
         {
             try
             {
-                var supplier = await _repository.GetByIdAsync(deleteSupplierCommand.Id) as Supplier;
-                if (supplier != null)
+                if (await _repository.GetByIdAsync(deleteSupplierCommand.Id) is Supplier supplier)
                 {
+                    var supplierAggregate = new SupplierAggregate(supplier);
+
+                    supplierAggregate.DeleteSupplier();
+
                     await _repository.RemoveAsync(supplier.Id);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling DeleteSupplierCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleDeleteSupplierAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in DeleteSupplierCommand");
             }
         }
 
@@ -272,19 +286,21 @@
         {
             try
             {
-                var supplier = await _repository.GetByIdAsync(activateSupplierCommand.SupplierId) as Supplier;
-                if (supplier != null)
+                if (await _repository.GetByIdAsync(activateSupplierCommand.SupplierId) is Supplier supplier)
                 {
-                    supplier.IsActive = true;
-                    supplier.UpdatedAt = DateTime.UtcNow;
+                    var supplierAggregate = new SupplierAggregate(supplier);
+                    supplierAggregate.ActivateSupplier();
 
-                    await _repository.UpdateAsync(supplier as TEntity);
+                    await _repository.UpdateAsync(supplierAggregate.Supplier as TEntity);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling ActivateSupplierCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleActivateSupplierAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in ActivateSupplierCommand");
             }
         }
 
@@ -292,44 +308,44 @@
         {
             try
             {
-                var supplier = await _repository.GetByIdAsync(deactivateSupplierCommand.SupplierId) as Supplier;
-                if (supplier != null)
+                if (await _repository.GetByIdAsync(deactivateSupplierCommand.SupplierId) is Supplier supplier)
                 {
-                    supplier.IsActive = false;
-                    supplier.UpdatedAt = DateTime.UtcNow;
+                    var supplierAggregate = new SupplierAggregate(supplier);
+                    supplierAggregate.DeactivateSupplier();
 
-                    await _repository.UpdateAsync(supplier as TEntity);
+                    await _repository.UpdateAsync(supplierAggregate.Supplier as TEntity);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling DeactivateSupplierCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleDeactivateSupplierAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in DeactivateSupplierCommand");
             }
         }
 
         // Warehouse handlers
-        private async Task HandleCreateWarehouseAsync(CreateWarehouseCommand createWarehouseCommand)
+        private async Task HandleCreateWarehouseAsync(CreateWarehouseCommand command)
         {
             try
             {
-                var warehouse = new Warehouse
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Name = createWarehouseCommand.Name,
-                    Phone = createWarehouseCommand.Phone,
-                    Address = createWarehouseCommand.Address,
-                    IsOpen = createWarehouseCommand.IsOpen,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                };
+                var warehouseAggregate = new WarehouseAggregate(null);
+                warehouseAggregate.CreateWarehouse(command.Name, command.Phone, command.Address, true);
 
-                await _repository.AddAsync(warehouse as TEntity);
+                await _repository.AddAsync(warehouseAggregate.Warehouse as TEntity);
+
+                // Log successful creation
+                _logger.LogInformation($"Warehouse created: {warehouseAggregate.Warehouse.Id}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling CreateWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleCreateWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in CreateWarehouseCommand");
             }
         }
 
@@ -337,21 +353,24 @@
         {
             try
             {
-                var warehouse = await _repository.GetByIdAsync(updateWarehouseCommand.WarehouseId) as Warehouse;
-                if (warehouse != null)
+                if (await _repository.GetByIdAsync(updateWarehouseCommand.WarehouseId) is Warehouse warehouse)
                 {
-                    warehouse.Name = updateWarehouseCommand.NewName;
-                    warehouse.Phone = updateWarehouseCommand.NewPhone;
-                    warehouse.Address = updateWarehouseCommand.NewAddress;
-                    warehouse.UpdatedAt = DateTime.UtcNow;
+                    var warehouseAggregate = new WarehouseAggregate(warehouse);
+                    warehouseAggregate.UpdateWarehouse(updateWarehouseCommand.NewName, updateWarehouseCommand.NewPhone, updateWarehouseCommand.NewAddress);
 
-                    await _repository.UpdateAsync(warehouse as TEntity);
+                    await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
+
+                    // Log successful creation
+                    _logger.LogInformation($"Warehouse updated: {warehouseAggregate.Warehouse.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling UpdateWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleUpdateWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in UpdateWarehouseCommand");
             }
         }
 
@@ -359,16 +378,24 @@
         {
             try
             {
-                var warehouse = await _repository.GetByIdAsync(deleteWarehouseCommand.WarehouseId) as Warehouse;
-                if (warehouse != null)
+                if (await _repository.GetByIdAsync(deleteWarehouseCommand.WarehouseId) is Warehouse warehouse)
                 {
-                    await _repository.RemoveAsync(warehouse.Id);
+                    var warehouseAggregate = new WarehouseAggregate(warehouse);
+                    warehouseAggregate.DeleteWarehouse();
+
+                    await _repository.RemoveAsync(warehouseAggregate.Warehouse.Id);
+
+                    // Log successful creation
+                    _logger.LogInformation($"Warehouse deleted: {warehouseAggregate.Warehouse.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling DeleteWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleDeleteWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in DeleteWarehouseCommand");
             }
         }
 
@@ -376,19 +403,24 @@
         {
             try
             {
-                var warehouse = await _repository.GetByIdAsync(closeWarehouseCommand.WarehouseId) as Warehouse;
-                if (warehouse != null)
+                if (await _repository.GetByIdAsync(closeWarehouseCommand.WarehouseId) is Warehouse warehouse)
                 {
-                    warehouse.IsOpen = false;
-                    warehouse.UpdatedAt = DateTime.UtcNow;
+                    var warehouseAggregate = new WarehouseAggregate(warehouse);
+                    warehouseAggregate.CloseWarehouse(warehouse.IsOpen);
 
-                    await _repository.UpdateAsync(warehouse as TEntity);
+                    await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
+
+                    // Log successful creation
+                    _logger.LogInformation($"Warehouse closed: {warehouseAggregate.Warehouse.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling CloseWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleCloseWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in CloseWarehouseCommand");
             }
         }
 
@@ -396,19 +428,24 @@
         {
             try
             {
-                var warehouse = await _repository.GetByIdAsync(reopenWarehouseCommand.WarehouseId) as Warehouse;
-                if (warehouse != null)
+                if (await _repository.GetByIdAsync(reopenWarehouseCommand.WarehouseId) is Warehouse warehouse)
                 {
-                    warehouse.IsOpen = true;
-                    warehouse.UpdatedAt = DateTime.UtcNow;
+                    var warehouseAggregate = new WarehouseAggregate(warehouse);
+                    warehouseAggregate.ReopenWarehouse(warehouse.IsOpen);
 
-                    await _repository.UpdateAsync(warehouse as TEntity);
+                    await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
+
+                    // Log successful creation
+                    _logger.LogInformation($"Warehouse reopened: {warehouseAggregate.Warehouse.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling ReopenWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleReopenWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in ReopenWarehouseCommand");
             }
         }
 
@@ -416,25 +453,30 @@
         {
             try
             {
-                var warehouse = await _repository.GetByIdAsync(moveWarehouseCommand.WarehouseId) as Warehouse;
-                if (warehouse != null)
+                if (await _repository.GetByIdAsync(moveWarehouseCommand.WarehouseId) is Warehouse warehouse)
                 {
-                    warehouse.Address.Street = moveWarehouseCommand.NewAddress;
-                    warehouse.Address.Region = moveWarehouseCommand.NewRegion;
-                    warehouse.Address.City = moveWarehouseCommand.NewCity;
-                    warehouse.Address.Country = moveWarehouseCommand.NewCountry;
-                    warehouse.Address.PostalCode = moveWarehouseCommand.NewPostalCode;
+                    var warehouseAggregate = new WarehouseAggregate(warehouse);
+                    warehouseAggregate.MoveWarehouse(
+                        moveWarehouseCommand.NewAddress, 
+                        moveWarehouseCommand.NewCity, 
+                        moveWarehouseCommand.NewRegion, 
+                        moveWarehouseCommand.NewCountry, 
+                        moveWarehouseCommand.NewPostalCode
+                        );
 
-                    warehouse.IsOpen = true;
-                    warehouse.UpdatedAt = DateTime.UtcNow;
+                    await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
 
-                    await _repository.UpdateAsync(warehouse as TEntity);
+                    // Log successful creation
+                    _logger.LogInformation($"Warehouse moved: {warehouseAggregate.Warehouse.Id}");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling MoveWarehouseCommand");
-                throw;
+                // Log the error
+                _logger.LogError(ex, "Error in HandleMoveWarehouseAsync");
+
+                // Rethrow or handle accordingly
+                throw new CommandExecutionException("Error in MoveWarehouseCommand");
             }
         }
     }
