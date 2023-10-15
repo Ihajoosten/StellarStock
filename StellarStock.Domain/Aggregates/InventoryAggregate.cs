@@ -2,7 +2,7 @@
 {
     public class InventoryAggregate
     {
-        public InventoryItem InventoryItem { get; private set; }
+        public InventoryItem? InventoryItem { get; private set; }
 
         public event EventHandler<InventoryItemCreatedEvent> InventoryItemCreated;
         public event EventHandler<InventoryItemQuantityUpdatedEvent> InventoryItemQuantityUpdated;
@@ -16,22 +16,7 @@
         public event EventHandler<InventoryItemSoldEvent> InventoryItemSold;
         public event EventHandler<InventoryItemRestockedEvent> InventoryItemRestocked;
 
-        public InventoryAggregate(InventoryItem? inventoryItem)
-        {
-            ValidateAndSetProperties(inventoryItem);
-        }
-
-        private void ValidateAndSetProperties(InventoryItem? inventoryItem)
-        {
-            // Basic validation
-            if (inventoryItem == null)
-            {
-                throw new ArgumentNullException(nameof(inventoryItem));
-            }
-
-            // Set properties
-            InventoryItem = inventoryItem;
-        }
+        public InventoryAggregate(InventoryItem? inventoryItem) => InventoryItem = inventoryItem;
 
         public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string warehouseId, string supplierId, DateRangeVO validityPeriod)
         {
@@ -46,7 +31,7 @@
             // Create the inventory item...
             var inventoryItem = new InventoryItem
             {
-                Id = new Guid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 Name = name,
                 Description = description,
                 Category = category,
@@ -116,7 +101,7 @@
             }
 
             // Check if the item is not expired before moving.
-            if (InventoryItem.ValidityPeriod != null && InventoryItem.ValidityPeriod.EndDate <= DateTime.UtcNow)
+            if (InventoryItem!.ValidityPeriod != null && InventoryItem.ValidityPeriod.EndDate <= DateTime.UtcNow)
             {
                 throw new InvalidOperationException("Cannot move an expired item.");
             }
@@ -131,22 +116,22 @@
         public void RemoveItem()
         {
             // Check if the item's quantity is greater than zero before removal.
-            if (InventoryItem.Quantity.Value > 0)
+            if (InventoryItem!.Quantity.Value > 0)
             {
                 throw new InvalidOperationException("Cannot remove an item with a non-zero quantity.");
             }
 
             // Check if the item is not expired before removal.
-            if (InventoryItem.ValidityPeriod != null && InventoryItem.ValidityPeriod.EndDate <= DateTime.UtcNow)
+            if (InventoryItem!.ValidityPeriod != null && InventoryItem.ValidityPeriod.EndDate >= DateTime.UtcNow)
             {
-                throw new InvalidOperationException("Cannot remove an expired item.");
+                throw new InvalidOperationException("Cannot remove an item that not is expired.");
             }
 
             // Raise an event
             OnInventoryItemRemoved(InventoryItem.Id);
         }
 
-        public void UpdateItem(string newName, string newDescription, int newPopularityScore, QuantityVO newQuantity, MoneyVO newMoney)
+        public void UpdateItem(string newName, string newDescription, ItemCategory newCategory, ProductCodeVO newProductCode, int newPopularityScore, QuantityVO newQuantity, MoneyVO newMoney)
         {
             // Validate inputs...
             if (string.IsNullOrEmpty(newName))
@@ -167,6 +152,18 @@
                 throw new ArgumentException("New popularity score cannot be negative.");
             }
 
+            if (string.IsNullOrEmpty(newProductCode.Code))
+            {
+                // Handle validation error, throw an exception, or take appropriate action.
+                throw new ArgumentException("New product code cannot be null or empty.");
+            }
+
+            // Check if the item's quantity is greater than zero before removal.
+            if (!int.IsPositive(newQuantity.Value))
+            {
+                throw new InvalidOperationException("Cannot update an item quantity with a non-zero quantity.");
+            }
+
             // Check if the item is not expired before updating.
             if (InventoryItem.ValidityPeriod != null && InventoryItem.ValidityPeriod.EndDate <= DateTime.UtcNow)
             {
@@ -178,9 +175,12 @@
             // Update the item information
             InventoryItem.Name = newName;
             InventoryItem.Description = newDescription;
+            InventoryItem.Category = newCategory;
+            InventoryItem.ProductCode = newProductCode;
             InventoryItem.PopularityScore = newPopularityScore;
             InventoryItem.Quantity = newQuantity;
             InventoryItem.Money = newMoney;
+            InventoryItem.UpdatedAt = DateTime.UtcNow;
 
             // Raise an event
             OnInventoryItemUpdated(InventoryItem);

@@ -1,19 +1,7 @@
-﻿namespace StellarStock.Test.Domain.UnitTests
+﻿namespace StellarStock.Test.Domain
 {
     public class WarehouseAggregateTests
     {
-        [Fact]
-        public void ThrowsArgumentNullException_With_InvalidWarehouse()
-        {
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-
-            // Assert & Act
-            var exception = Assert.Throws<ArgumentNullException>(() => new WarehouseAggregate(null, inventoryItemRepositoryMock.Object));
-
-            // Assert message
-            Assert.Equal("Value cannot be null. (Parameter 'warehouse')", exception.Message);
-        }
-
         [Fact]
         public void CreateWarehouse_WithValidInputs_CreatesWarehouseAndRaisesEvents()
         {
@@ -29,8 +17,7 @@
                 UpdatedAt = DateTime.UtcNow,
             };
 
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Mock the event handler
             var WarehouseOpenedEventHandler = new Mock<EventHandler<WarehouseOpenedEvent>>();
@@ -74,8 +61,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(invalidWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(invalidWarehouse);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>
@@ -96,8 +82,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Mock the event handler
             var WarehouseUpdatedEventHandler = new Mock<EventHandler<WarehouseUpdatedEvent>>();
@@ -134,8 +119,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>
@@ -156,8 +140,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>
@@ -178,8 +161,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Mock the event handler
             var WarehouseMovedEventHandler = new Mock<EventHandler<WarehouseMovedEvent>>();
@@ -219,8 +201,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>
@@ -241,8 +222,7 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(validWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(validWarehouse);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>
@@ -263,8 +243,8 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(openWarehouse, inventoryItemRepositoryMock.Object);
+
+            var WarehouseAggregate = new WarehouseAggregate(openWarehouse);
 
             // Mock the event handler
             var WarehouseClosedEventHandler = new Mock<EventHandler<WarehouseClosedEvent>>();
@@ -300,8 +280,8 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
-            var inventoryItemRepositoryMock = new Mock<IInventoryItemRepository>();
-            var WarehouseAggregate = new WarehouseAggregate(closedWarehouse, inventoryItemRepositoryMock.Object);
+            var WarehouseAggregate = new WarehouseAggregate(closedWarehouse);
+
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() =>

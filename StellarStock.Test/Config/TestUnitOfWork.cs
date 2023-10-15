@@ -1,13 +1,15 @@
-﻿using Moq;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
 
-namespace StellarStock.Infrastructure.Data
+namespace StellarStock.Test.Config
 {
-    public class UnitOfWork : IUnitOfWork
+    public class TestUnitOfWork : IUnitOfWork
     {
-        private readonly IApplicationDbContext _context;
+        private readonly TestDbContext _context;
         private Dictionary<Type, object> _repositories;
         private IDbContextTransaction _transaction;
-        public UnitOfWork(IApplicationDbContext context)
+        public TestUnitOfWork(TestDbContext context)
         {
             _context = context;
             _repositories = new Dictionary<Type, object>();
@@ -26,14 +28,20 @@ namespace StellarStock.Infrastructure.Data
             return repository;
         }
 
-
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => await _context.SaveChangesAsync(cancellationToken);
         public DbSet<T> Set<T>() where T : class => _context.Set<T>();
         public EntityEntry<T> Entry<T>(T entity) where T : class => _context.Entry(entity);
 
         public async Task BeginTransactionAsync() => _transaction = await _context.Database.BeginTransactionAsync();
         public async Task CommitAsync() => await _transaction.CommitAsync();
-        public async Task RollbackAsync() => await _transaction.RollbackAsync();
+        public async Task RollbackAsync()
+        {
+            if (_context != null)
+            {
+                await _context.Database.RollbackTransactionAsync();
+            }
+            await _transaction.RollbackAsync();
+        }
         public void Dispose() => _transaction?.Dispose();
     }
 }

@@ -2,7 +2,7 @@
 {
     public class WarehouseAggregate
     {
-        public Warehouse Warehouse { get; private set; }
+        public Warehouse? Warehouse { get; private set; }
 
         public event EventHandler<WarehouseUpdatedEvent> WarehouseUpdated;
         public event EventHandler<WarehouseOpenedEvent> WarehouseOpened;
@@ -13,23 +13,7 @@
 
         private readonly IInventoryItemRepository _inventoryItemRepository;
 
-        public WarehouseAggregate(Warehouse? Warehouse, IInventoryItemRepository inventoryItemRepository)
-        {
-            ValidateAndSetProperties(Warehouse);
-            _inventoryItemRepository = inventoryItemRepository;
-        }
-
-        private void ValidateAndSetProperties(Warehouse? warehouse)
-        {
-            // Basic validation
-            if (warehouse == null)
-            {
-                throw new ArgumentNullException(nameof(warehouse));
-            }
-
-            // Set properties
-            Warehouse = warehouse;
-        }
+        public WarehouseAggregate(Warehouse? warehouse) => Warehouse = warehouse;
 
         public void CreateWarehouse(string name, string phone, AddressVO address, bool isOpen)
         {
@@ -43,7 +27,7 @@
             // Create the inventory item...
             Warehouse = new Warehouse
             {
-                Id = new Guid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 Name = name,
                 Phone = phone,
                 Address = address,
@@ -88,9 +72,9 @@
         public void MoveWarehouse(string newAddress, string newCity, string newRegion, string newCountry, string newPostalCode)
         {
             // Basic validation
-            if (string.IsNullOrEmpty(newAddress) || string.IsNullOrEmpty(newCity) || string.IsNullOrEmpty(newCountry) || string.IsNullOrEmpty(newPostalCode))
+            if (string.IsNullOrEmpty(newAddress) || string.IsNullOrEmpty(newCity) || string.IsNullOrEmpty(newRegion) || string.IsNullOrEmpty(newCountry) || string.IsNullOrEmpty(newPostalCode))
             {
-                throw new ArgumentException("New address, city, postal code and country are required for moving the Warehouse.");
+                throw new ArgumentException("New address, city, postal code, region and country are required for moving the Warehouse.");
             }
 
             Warehouse.Address.Street = newAddress;

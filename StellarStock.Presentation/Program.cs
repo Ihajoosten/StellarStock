@@ -1,20 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Web;
-using Serilog;
-using StellarStock.Domain.Repositories;
-using StellarStock.Domain.Repositories.Base;
-using StellarStock.Domain.Services;
-using StellarStock.Domain.Services.Interfaces;
-using StellarStock.Infrastructure.Data;
-using StellarStock.Infrastructure.Data.Identity;
-using StellarStock.Infrastructure.Data.Identity.Model;
-using StellarStock.Infrastructure.Data.Interfaces;
-using StellarStock.Infrastructure.Logging;
-using StellarStock.Infrastructure.Repositories;
-using StellarStock.Infrastructure.Repositories.Base;
-
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
@@ -39,14 +22,13 @@ services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("StellarStockApiConnection")));
 services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
-// Configure logging with Serilog
-LoggingConfig.Configure();
-services.AddLogging(builder => builder.AddSerilog());
-
 // Application Service Dependencies
-/*services.AddScoped<IAppInventoryItemService, AppInventoryItemService>();
-services.AddScoped<IAppWarehouseService, AppWarehouseService>();
-services.AddScoped<IAppSupplierService, AppSupplierService>();*/
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(InventoryItemCommandHandler<,>));
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(SupplierCommandHandler<,>));
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(WarehouseCommandHandler<,>));
+services.AddScoped(typeof(IInventoryItemQueryHandler<,>), typeof(InventoryItemQueryHandler<,>));
+services.AddScoped(typeof(ISupplierQueryHandler<,>), typeof(SupplierQueryHandler<,>));
+services.AddScoped(typeof(IWarehouseQueryHandler<,>), typeof(WarehouseQueryHandler<,>));
 
 // Infrastructure Repository Dependencies
 services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));
