@@ -2,56 +2,110 @@
 {
     public class SupplierQueryHandler<TResult, TQuery> : ISupplierQueryHandler<TQuery, TResult> where TQuery : IQuery<TResult>
     {
-        private readonly IMapper _mapper;
+        private readonly ILogger<SupplierQueryHandler<TResult, TQuery>> _logger;
         private readonly ISupplierRepository _supplierRepository;
+        private readonly IMapper _mapper;
 
-        public SupplierQueryHandler(IMapper mapper, ISupplierRepository supplierRepository)
+        public SupplierQueryHandler(ILogger<SupplierQueryHandler<TResult, TQuery>> logger, ISupplierRepository supplierRepository, IMapper mapper)
         {
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _supplierRepository = supplierRepository ?? throw new ArgumentNullException(nameof(supplierRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
-        public async Task<TResult> HandleAsync(TQuery query)
+        public async Task HandleAsync(TQuery query)
         {
-            return query switch
+            switch (query)
             {
-                GetActiveSuppliersQuery getActiveSuppliersQuery => await HandleGetActiveSuppliersQueryAsync(getActiveSuppliersQuery),
-                GetSupplierByIdQuery getSuppliersByIdQuery => await HandleGetSuppliersByIdQueryAsync(getSuppliersByIdQuery),
-                GetSuppliersByCityQuery getSuppliersByCityQuery => await HandleGetSuppliersByCityQueryAsync(getSuppliersByCityQuery),
-                GetSuppliersByRegionQuery getSuppliersByRegionQuery => await HandleGetSuppliersByRegionQueryAsync(getSuppliersByRegionQuery),
-                GetSuppliersWithValidityExpiringSoonQuery getSuppliersExpiringSoonQuery => await HandleGetSuppliersExpiringSoonQueryAsync(getSuppliersExpiringSoonQuery),
-                _ => throw new ArgumentException($"Unsupported query type: {query.GetType().Name}"),
-            };
+                case GetActiveSuppliersQuery getActiveSuppliersQuery:
+                    await HandleGetActiveSuppliersQueryAsync(getActiveSuppliersQuery);
+                    break;
+                case GetSupplierByIdQuery getSupplierByIdQuery:
+                    await HandleGetSuppliersByIdQueryAsync(getSupplierByIdQuery);
+                    break;
+                case GetSuppliersByCityQuery getSuppliersByCityQuery:
+                    await HandleGetSuppliersByCityQueryAsync(getSuppliersByCityQuery);
+                    break;
+                case GetSuppliersByRegionQuery getSuppliersByRegionQuery:
+                    await HandleGetSuppliersByRegionQueryAsync(getSuppliersByRegionQuery);
+                    break;
+                case GetSuppliersWithValidityExpiringSoonQuery getSuppliersExpiringSoonQuery:
+                    await HandleGetSuppliersExpiringSoonQueryAsync(getSuppliersExpiringSoonQuery);
+                    break;
+                default:
+                    _logger.LogError($"Unsupported query type: {typeof(TQuery)}");
+                    throw new ArgumentException($"Unsupported query type: {typeof(TResult)}");
+            }
         }
 
         private async Task<TResult> HandleGetActiveSuppliersQueryAsync(GetActiveSuppliersQuery query)
         {
-            var activeSuppliers = await _supplierRepository.GetActiveSuppliersAsync();
-            return _mapper.Map<TResult>(activeSuppliers);
+            try
+            {
+                var activeSuppliers = await _supplierRepository.GetActiveSuppliersAsync();
+                return _mapper.Map<TResult>(activeSuppliers);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling GetActiveSuppliersQuery");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetSuppliersByIdQueryAsync(GetSupplierByIdQuery query)
         {
-            var supplier = await _supplierRepository.GetByIdAsync(query.SupplierId);
-            return _mapper.Map<TResult>(supplier);
+            try
+            {
+                var supplier = await _supplierRepository.GetByIdAsync(query.SupplierId);
+                return _mapper.Map<TResult>(supplier);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling GetSuppliersByIdQuery");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetSuppliersByCityQueryAsync(GetSuppliersByCityQuery query)
         {
-            var suppliersByCity = await _supplierRepository.GetSuppliersByCityAsync(query.CityName);
-            return _mapper.Map<TResult>(suppliersByCity);
+            try
+            {
+                var suppliersByCity = await _supplierRepository.GetSuppliersByCityAsync(query.CityName);
+                return _mapper.Map<TResult>(suppliersByCity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling GetSuppliersByCityQuery");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetSuppliersByRegionQueryAsync(GetSuppliersByRegionQuery query)
         {
-            var suppliersByRegion = await _supplierRepository.GetSuppliersByRegionAsync(query.RegionName);
-            return _mapper.Map<TResult>(suppliersByRegion);
+            try
+            {
+                var suppliersByRegion = await _supplierRepository.GetSuppliersByRegionAsync(query.RegionName);
+                return _mapper.Map<TResult>(suppliersByRegion);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling GetSuppliersByRegionQuery");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetSuppliersExpiringSoonQueryAsync(GetSuppliersWithValidityExpiringSoonQuery query)
         {
-            var suppliersExpiringSoon = await _supplierRepository.GetSuppliersWithValidityExpiringSoonAsync(query.ExpirationDate);
-            return _mapper.Map<TResult>(suppliersExpiringSoon);
+            try
+            {
+                var suppliersExpiringSoon = await _supplierRepository.GetSuppliersWithValidityExpiringSoonAsync(query.ExpirationDate);
+                return _mapper.Map<TResult>(suppliersExpiringSoon);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error handling GetSuppliersExpiringSoonQuery");
+                throw;
+            }
         }
     }
 }

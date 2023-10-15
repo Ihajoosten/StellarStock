@@ -4,61 +4,126 @@
     {
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<WarehouseQueryHandler<TResult, TQuery>> _logger;
 
-        public WarehouseQueryHandler(IWarehouseRepository warehouseRepository, IMapper mapper)
+        public WarehouseQueryHandler(IWarehouseRepository warehouseRepository, IMapper mapper, ILogger<WarehouseQueryHandler<TResult, TQuery>> logger)
         {
             _warehouseRepository = warehouseRepository ?? throw new ArgumentNullException(nameof(warehouseRepository));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<TResult> HandleAsync(TQuery query)
+        public async Task HandleAsync(TQuery query)
         {
-            return query switch
+            switch (query)
             {
-                GetClosedWarehousesQuery getClosedWarehousesQuery => await HandleGetClosedWarehousesQueryAsync(getClosedWarehousesQuery),
-                GetOpenedWarehousesQuery getOpenedWarehousesQuery => await HandleGetOpenedWarehousesQueryAsync(getOpenedWarehousesQuery),
-                GetWarehouseByIdQuery getWarehouseByIdQuery => await HandleGetWarehouseByIdQueryAsync(getWarehouseByIdQuery),
-                GetWarehousesByCityQuery getWarehousesByCityQuery => await HandleGetWarehousesByCityQueryAsync(getWarehousesByCityQuery),
-                GetWarehousesByRegionQuery getWarehousesByRegionQuery => await HandleGetWarehousesByRegionQueryAsync(getWarehousesByRegionQuery),
-                GetWarehouseStockedItemsQuery getWarehouseStockedItemsQuery => await HandleGetWarehouseStockedItemsQueryAsync(getWarehouseStockedItemsQuery),
-                _ => throw new ArgumentException($"Unsupported query type: {query.GetType().Name}"),
+                case GetClosedWarehousesQuery getClosedWarehousesQuery:
+                    await HandleGetClosedWarehousesQueryAsync(getClosedWarehousesQuery);
+                    break;
+
+                case GetOpenedWarehousesQuery getOpenedWarehousesQuery:
+                    await HandleGetOpenedWarehousesQueryAsync(getOpenedWarehousesQuery);
+                    break;
+                case GetWarehouseByIdQuery getWarehouseByIdQuery:
+                    await HandleGetWarehouseByIdQueryAsync(getWarehouseByIdQuery);
+                    break;
+                case GetWarehousesByCityQuery getWarehousesByCityQuery:
+                    await HandleGetWarehousesByCityQueryAsync(getWarehousesByCityQuery);
+                    break;
+                case GetWarehousesByRegionQuery getWarehousesByRegionQuery:
+                    await HandleGetWarehousesByRegionQueryAsync(getWarehousesByRegionQuery);
+                    break;
+                case GetWarehouseStockedItemsQuery getWarehouseStockedItemsQuery:
+                    await HandleGetWarehouseStockedItemsQueryAsync(getWarehouseStockedItemsQuery);
+                    break;
+                default:
+                    _logger.LogError($"Unsupported query type: {typeof(TQuery)}");
+                    throw new ArgumentException($"Unsupported query type: {typeof(TResult)}");
             };
         }
 
         private async Task<TResult> HandleGetClosedWarehousesQueryAsync(GetClosedWarehousesQuery query)
         {
-            var closedWarehouses = await _warehouseRepository.GetClosedWarehouses();
-            return _mapper.Map<TResult>(closedWarehouses);
+            try
+            {
+                var closedWarehouses = await _warehouseRepository.GetClosedWarehouses();
+                return _mapper.Map<TResult>(closedWarehouses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetClosedWarehousesQueryAsync");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetOpenedWarehousesQueryAsync(GetOpenedWarehousesQuery query)
         {
-            var openedWarehouses = await _warehouseRepository.GetOpenedWarehouses();
-            return _mapper.Map<TResult>(openedWarehouses);
+            try
+            {
+                var openedWarehouses = await _warehouseRepository.GetOpenedWarehouses();
+                return _mapper.Map<TResult>(openedWarehouses);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetOpenedWarehousesQueryAsync");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetWarehouseByIdQueryAsync(GetWarehouseByIdQuery query)
         {
-            var warehouse = await _warehouseRepository.GetByIdAsync(query.WarehouseId);
-            return _mapper.Map<TResult>(warehouse);
+            try
+            {
+                var warehouse = await _warehouseRepository.GetByIdAsync(query.WarehouseId);
+                return _mapper.Map<TResult>(warehouse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetWarehouseByIdQueryAsync");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetWarehousesByCityQueryAsync(GetWarehousesByCityQuery query)
         {
-            var warehousesByCity = await _warehouseRepository.GetWarehousesByCityAsync(query.CityName);
-            return _mapper.Map<TResult>(warehousesByCity);
+            try
+            {
+                var warehousesByCity = await _warehouseRepository.GetWarehousesByCityAsync(query.CityName);
+                return _mapper.Map<TResult>(warehousesByCity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetWarehousesByCityQueryAsync");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetWarehousesByRegionQueryAsync(GetWarehousesByRegionQuery query)
         {
-            var warehousesByRegion = await _warehouseRepository.GetWarehousesByRegionAsync(query.RegionName);
-            return _mapper.Map<TResult>(warehousesByRegion);
+            try
+            {
+                var warehousesByRegion = await _warehouseRepository.GetWarehousesByRegionAsync(query.RegionName);
+                return _mapper.Map<TResult>(warehousesByRegion);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetWarehousesByRegionQueryAsync");
+                throw;
+            }
         }
 
         private async Task<TResult> HandleGetWarehouseStockedItemsQueryAsync(GetWarehouseStockedItemsQuery query)
         {
-            var stockedItems = await _warehouseRepository.GetWarehouseStockedItems(query.WarehouseId);
-            return _mapper.Map<TResult>(stockedItems);
+            try
+            {
+                var stockedItems = await _warehouseRepository.GetWarehouseStockedItems(query.WarehouseId);
+                return _mapper.Map<TResult>(stockedItems);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in HandleGetWarehouseStockedItemsQueryAsync");
+                throw;
+            }
         }
     }
 }
