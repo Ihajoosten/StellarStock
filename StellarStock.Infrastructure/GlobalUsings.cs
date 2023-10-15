@@ -1,6 +1,7 @@
 ﻿// Custom Imports
 global using Serilog;
 global using Microsoft.Extensions.Logging;
+global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.ChangeTracking;
 global using Microsoft.EntityFrameworkCore.Storage;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
