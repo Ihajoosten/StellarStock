@@ -37,7 +37,7 @@
 
                 await _unitOfWork.CommitAsync();
 
-                return itemsByPopularityScore   ;
+                return itemsByPopularityScore;
             }
             catch (Exception ex)
             {

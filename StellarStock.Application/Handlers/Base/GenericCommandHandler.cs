@@ -1,7 +1,4 @@
-﻿using StellarStock.Application.Commands.WarehouseCommands;
-using StellarStock.Domain.Aggregates;
-
-namespace StellarStock.Application.Handlers.Base
+﻿namespace StellarStock.Application.Handlers.Base
 {
     public class GenericCommandHandler<TCommand, TEntity> : IGenericCommandHandler<TCommand, TEntity> where TCommand : ICommand where TEntity : class
     {
@@ -457,10 +454,10 @@ namespace StellarStock.Application.Handlers.Base
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
                     warehouseAggregate.MoveWarehouse(
-                        moveWarehouseCommand.NewAddress, 
-                        moveWarehouseCommand.NewCity, 
-                        moveWarehouseCommand.NewRegion, 
-                        moveWarehouseCommand.NewCountry, 
+                        moveWarehouseCommand.NewAddress,
+                        moveWarehouseCommand.NewCity,
+                        moveWarehouseCommand.NewRegion,
+                        moveWarehouseCommand.NewCountry,
                         moveWarehouseCommand.NewPostalCode
                         );
 

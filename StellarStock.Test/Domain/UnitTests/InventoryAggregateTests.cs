@@ -288,6 +288,9 @@
             var newPopularityScore = 20; // Assuming 20 is a valid popularity score
             var newQuantity = new QuantityVO(50); // Assuming 50 is a valid quantity
             var newMoney = new MoneyVO(10.99m, "USD"); // Assuming 10.99 USD is a valid money value
+            var newProductCode = new ProductCodeVO("asfasdf-654wer-asdfa");
+            var newCategory = ItemCategory.Accessories;
+
 
             // Mock the event handler
             var itemUpdatedEventHandler = new Mock<EventHandler<InventoryItemUpdatedEvent>>();
@@ -296,7 +299,7 @@
             inventoryAggregate.InventoryItemUpdated += itemUpdatedEventHandler.Object;
 
             // Act
-            inventoryAggregate.UpdateItem(newName, newDescription, newPopularityScore, newQuantity, newMoney);
+            inventoryAggregate.UpdateItem(newName, newDescription, newCategory, newProductCode, newPopularityScore, newQuantity, newMoney);
 
             // Assert
             Assert.Equal(newName, inventoryAggregate.InventoryItem.Name);
@@ -336,10 +339,12 @@
             var newPopularityScore = 15;
             var newQuantity = new QuantityVO(10);
             var newMoney = new MoneyVO(10.99m, "USD");
+            var newProductCode = new ProductCodeVO("asfasdf-654wer-asdfa");
+            var newCategory = ItemCategory.Accessories;
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                inventoryAggregate.UpdateItem(newName, newDescription, newPopularityScore, newQuantity, newMoney));
+            inventoryAggregate.UpdateItem(newName, newDescription, newCategory, newProductCode, newPopularityScore, newQuantity, newMoney));
 
             // Assert
             Assert.Equal("New name cannot be null or empty.", exception.Message);
@@ -369,10 +374,12 @@
             var newDescription = "Updated item description.";
             var newQuantity = new QuantityVO(10);
             var newMoney = new MoneyVO(10.99m, "USD");
+            var newProductCode = new ProductCodeVO("asfasdf-654wer-asdfa");
+            var newCategory = ItemCategory.Accessories;
 
             // Act & Assert
             var exception = Assert.Throws<ArgumentException>(() =>
-                inventoryAggregate.UpdateItem(newName, newDescription, -15, newQuantity, newMoney));
+                inventoryAggregate.UpdateItem(newName, newDescription, newCategory, newProductCode, -15, newQuantity, newMoney));
 
             // Assert
             Assert.Equal("New popularity score cannot be negative.", exception.Message);

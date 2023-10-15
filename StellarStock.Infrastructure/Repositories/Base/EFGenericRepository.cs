@@ -1,6 +1,4 @@
-﻿using System.Transactions;
-
-namespace StellarStock.Infrastructure.Repositories.Base
+﻿namespace StellarStock.Infrastructure.Repositories.Base
 {
     public class EFGenericRepository<T> : IGenericRepository<T> where T : class
     {

@@ -88,7 +88,7 @@
         public void MoveWarehouse(string newAddress, string newCity, string newRegion, string newCountry, string newPostalCode)
         {
             // Basic validation
-            if (string.IsNullOrEmpty(newAddress) || string.IsNullOrEmpty(newCity) || string.IsNullOrEmpty(newRegion)  || string.IsNullOrEmpty(newCountry) || string.IsNullOrEmpty(newPostalCode))
+            if (string.IsNullOrEmpty(newAddress) || string.IsNullOrEmpty(newCity) || string.IsNullOrEmpty(newRegion) || string.IsNullOrEmpty(newCountry) || string.IsNullOrEmpty(newPostalCode))
             {
                 throw new ArgumentException("New address, city, postal code, region and country are required for moving the Warehouse.");
             }
