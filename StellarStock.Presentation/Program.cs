@@ -23,12 +23,6 @@ services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configu
 services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
 // Application Service Dependencies
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(InventoryItemCommandHandler<,>));
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(SupplierCommandHandler<,>));
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(WarehouseCommandHandler<,>));
-services.AddScoped(typeof(IInventoryItemQueryHandler<,>), typeof(InventoryItemQueryHandler<,>));
-services.AddScoped(typeof(ISupplierQueryHandler<,>), typeof(SupplierQueryHandler<,>));
-services.AddScoped(typeof(IWarehouseQueryHandler<,>), typeof(WarehouseQueryHandler<,>));
 
 // Infrastructure Repository Dependencies
 services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));

@@ -5,10 +5,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Identity.Web;
 
 // Applicationg Imports
-global using StellarStock.Application.Handlers.CommandHandlers;
-global using StellarStock.Application.Handlers.QueryHandlers;
-global using StellarStock.Application.Interfaces.Handler;
-global using StellarStock.Application.Interfaces.Handler.Base;
+
 
 // Domain Imports
 global using StellarStock.Domain.Repositories;

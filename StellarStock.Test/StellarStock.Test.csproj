@@ -25,4 +25,8 @@
     <ProjectReference Include="..\StellarStock.Infrastructure\StellarStock.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Application\" />
+  </ItemGroup>
+
 </Project>
