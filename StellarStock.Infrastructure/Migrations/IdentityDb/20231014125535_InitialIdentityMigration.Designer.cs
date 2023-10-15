@@ -5,13 +5,12 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using StellarStock.Infrastructure.Data.Identity;
 
 #nullable disable
 
 namespace StellarStock.Infrastructure.Migrations.IdentityDb
 {
-    [DbContext(typeof(IdentityDbContext))]
+    [DbContext(typeof(Data.Identity.IdentityDbContext))]
     [Migration("20231014125535_InitialIdentityMigration")]
     partial class InitialIdentityMigration
     {

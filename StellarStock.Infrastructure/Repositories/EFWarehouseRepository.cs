@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using StellarStock.Domain.Entities;
-using StellarStock.Domain.Repositories;
-using StellarStock.Infrastructure.Data.Interfaces;
-using StellarStock.Infrastructure.Repositories.Base;
-
-namespace StellarStock.Infrastructure.Repositories
+﻿namespace StellarStock.Infrastructure.Repositories
 {
     public class EFWarehouseRepository : EFGenericRepository<Warehouse>, IWarehouseRepository
     {
@@ -22,6 +16,22 @@ namespace StellarStock.Infrastructure.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error while retrieving warehouses by city '{cityId}'");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<Warehouse>> GetWarehousesByRegionAsync(string region)
+        {
+            try
+            {
+                var warehouses = await _unitOfWork.GetRepository<Warehouse>()!.GetAllAsync();
+                var warehousesByRegion = warehouses!.Where(warehouse => warehouse.Address.Region == region).ToList();
+                _logger.LogInformation($"Retrieved {warehousesByRegion.Count} warehouses by region '{region}'");
+                return warehousesByRegion;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error while retrieving warehouses by region '{region}'");
                 throw;
             }
         }

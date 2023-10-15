@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace StellarStock.Infrastructure.Logging
+﻿namespace StellarStock.Infrastructure.Logging
 {
     public class LoggingConfig
     {

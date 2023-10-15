@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StellarStock.Domain.Entities.Base;
-using StellarStock.Domain.ValueObjects;
-using System.ComponentModel.DataAnnotations;
-
-namespace StellarStock.Domain.Entities
+﻿namespace StellarStock.Domain.Entities
 {
     public class Supplier : BaseEntity
     {

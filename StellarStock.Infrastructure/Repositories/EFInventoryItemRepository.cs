@@ -1,10 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using StellarStock.Domain.Entities;
-using StellarStock.Domain.Repositories;
-using StellarStock.Infrastructure.Data.Interfaces;
-using StellarStock.Infrastructure.Repositories.Base;
-
-namespace StellarStock.Infrastructure.Repositories
+﻿namespace StellarStock.Infrastructure.Repositories
 {
     public class EFInventoryItemRepository : EFGenericRepository<InventoryItem>, IInventoryItemRepository
     {

@@ -1,8 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-using StellarStock.Domain.Events.ItemEvents;
-using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Domain.Aggregates
+﻿namespace StellarStock.Domain.Aggregates
 {
     public class InventoryAggregate
     {
