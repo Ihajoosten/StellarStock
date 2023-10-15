@@ -1,4 +1,4 @@
-﻿namespace StellarStock.Application.Handlers
+﻿namespace StellarStock.Application.Handlers.QueryHandlers
 {
     public class SupplierQueryHandler<TResult, TQuery> : ISupplierQueryHandler<TQuery, TResult> where TQuery : IQuery<TResult>
     {

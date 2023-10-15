@@ -1,4 +1,4 @@
-﻿namespace StellarStock.Application.Handlers
+﻿namespace StellarStock.Application.Handlers.QueryHandlers
 {
     public class InventoryItemQueryHandler<TResult, TQuery> : IInventoryItemQueryHandler<TQuery, TResult> where TQuery : IQuery<TResult>
     {
@@ -29,15 +29,15 @@
                 case GetInventoryItemsWithValidityExpiringSoonQuery getItemsExpiringSoonQuery:
                     await HandleGetItemsExpiringSoonQueryAsync(getItemsExpiringSoonQuery);
                     break;
-                case GetInStockItemsQuery: 
-                    await HandleGetItemsInStockQueryAsync(); 
+                case GetInStockItemsQuery:
+                    await HandleGetItemsInStockQueryAsync();
                     break;
                 case SearchInventoryItemsQuery searchItemsQuery:
-                    await HandleSearchItemsQueryAsync(searchItemsQuery); 
-                        break;
+                    await HandleSearchItemsQueryAsync(searchItemsQuery);
+                    break;
                 case GetInventoryItemsByWarehouseQuery getByWarehouseQuery:
                     await HandleGetItemsByWarehouseQueryAsync(getByWarehouseQuery);
-                        break;
+                    break;
                 case GetInventoryItemsByCategoryQuery getByCategoryQuery:
                     await HandleGetByCategoryQueryAsync(getByCategoryQuery);
                     break;
