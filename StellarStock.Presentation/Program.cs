@@ -1,22 +1,3 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Web;
-using StellarStock.Application.Handlers;
-using StellarStock.Application.Handlers.Base;
-using StellarStock.Application.Interfaces.Handler;
-using StellarStock.Application.Interfaces.Handler.Base;
-using StellarStock.Domain.Repositories;
-using StellarStock.Domain.Repositories.Base;
-using StellarStock.Domain.Services;
-using StellarStock.Domain.Services.Interfaces;
-using StellarStock.Infrastructure.Data;
-using StellarStock.Infrastructure.Data.Identity;
-using StellarStock.Infrastructure.Data.Identity.Model;
-using StellarStock.Infrastructure.Data.Interfaces;
-using StellarStock.Infrastructure.Repositories;
-using StellarStock.Infrastructure.Repositories.Base;
-
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
@@ -42,7 +23,9 @@ services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configu
 services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
 // Application Service Dependencies
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(GenericCommandHandler<,>));
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(InventoryItemCommandHandler<,>));
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(SupplierCommandHandler<,>));
+services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(WarehouseCommandHandler<,>));
 services.AddScoped(typeof(IInventoryItemQueryHandler<,>), typeof(InventoryItemQueryHandler<,>));
 services.AddScoped(typeof(ISupplierQueryHandler<,>), typeof(SupplierQueryHandler<,>));
 services.AddScoped(typeof(IWarehouseQueryHandler<,>), typeof(WarehouseQueryHandler<,>));

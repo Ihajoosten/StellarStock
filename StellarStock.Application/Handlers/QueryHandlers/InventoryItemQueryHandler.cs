@@ -1,4 +1,4 @@
-﻿namespace StellarStock.Application.Handlers
+﻿namespace StellarStock.Application.Handlers.QueryHandlers
 {
     public class InventoryItemQueryHandler<TResult, TQuery> : IInventoryItemQueryHandler<TQuery, TResult> where TQuery : IQuery<TResult>
     {

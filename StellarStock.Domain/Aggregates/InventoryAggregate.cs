@@ -16,11 +16,7 @@
         public event EventHandler<InventoryItemSoldEvent> InventoryItemSold;
         public event EventHandler<InventoryItemRestockedEvent> InventoryItemRestocked;
 
-        public InventoryAggregate(InventoryItem? inventoryItem)
-        {
-            InventoryItem = inventoryItem;
-            //ValidateAndSetProperties(inventoryItem);
-        }
+        public InventoryAggregate(InventoryItem? inventoryItem) => ValidateAndSetProperties(inventoryItem);
 
         private void ValidateAndSetProperties(InventoryItem? inventoryItem)
         {

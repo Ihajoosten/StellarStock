@@ -3,7 +3,7 @@
     public class BaseEntity
     {
         [DataType(DataType.Text)]
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string? Id { get; set; }
 
         [DataType(DataType.DateTime)]
         public DateTime? CreatedAt { get; set; }

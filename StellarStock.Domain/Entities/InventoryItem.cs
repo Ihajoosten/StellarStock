@@ -1,7 +1,7 @@
 ﻿namespace StellarStock.Domain.Entities
 {
     public class InventoryItem : BaseEntity
-    {
+    { 
         [Required(ErrorMessage = "Name is required.")]
         [DataType(DataType.Text)]
         [MaxLength(75, ErrorMessage = "Name cannot exceed 75 characters")]

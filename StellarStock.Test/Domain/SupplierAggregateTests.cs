@@ -1,4 +1,4 @@
-﻿namespace StellarStock.Test.Domain.UnitTests
+﻿namespace StellarStock.Test.Domain
 {
     public class SupplierAggregateTests
     {

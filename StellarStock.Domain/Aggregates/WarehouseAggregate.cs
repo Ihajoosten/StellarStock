@@ -15,8 +15,7 @@
 
         public WarehouseAggregate(Warehouse? warehouse)
         {
-            //ValidateAndSetProperties(Warehouse);
-            Warehouse = warehouse;
+            ValidateAndSetProperties(warehouse);
         }
 
         private void ValidateAndSetProperties(Warehouse? warehouse)

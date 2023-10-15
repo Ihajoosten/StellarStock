@@ -13,8 +13,7 @@ namespace StellarStock.Domain.Aggregates
 
         public SupplierAggregate(Supplier? supplier)
         {
-            Supplier = supplier;
-            //ValidateAndSetProperties(supplier);
+            ValidateAndSetProperties(supplier);
         }
 
         private void ValidateAndSetProperties(Supplier? supplier)
