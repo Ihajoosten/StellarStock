@@ -11,42 +11,29 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task HandleAsync(TCommand command)
+        public async Task<string> HandleAsync(TCommand command)
         {
-            switch (command)
-            { // Warehouse Commands
-                case CreateWarehouseCommand createWarehouseCommand:
-                    await HandleCreateWarehouseAsync(createWarehouseCommand);
-                    break;
-                case UpdateWarehouseCommand updateWarehouseCommand:
-                    await HandleUpdateWarehouseAsync(updateWarehouseCommand);
-                    break;
-                case DeleteWarehouseCommand deleteWarehouseCommand:
-                    await HandleDeleteWarehouseAsync(deleteWarehouseCommand);
-                    break;
-                case CloseWarehouseCommand closeWarehouseCommand:
-                    await HandleCloseWarehouseAsync(closeWarehouseCommand);
-                    break;
-                case ReopenWarehouseCommand reopenWarehouseCommand:
-                    await HandleReopenWarehouseAsync(reopenWarehouseCommand);
-                    break;
-                case MoveWarehouseCommand moveWarehouseCommand:
-                    await HandleMoveWarehouseAsync(moveWarehouseCommand);
-                    break;
-                default:
-                    LogAndThrowUnsupportedCommand();
-                    break;
-            }
+            return command switch
+            { 
+                // Warehouse Commands
+                CreateWarehouseCommand createWarehouseCommand => await HandleCreateWarehouseAsync(createWarehouseCommand),
+                UpdateWarehouseCommand updateWarehouseCommand => await HandleUpdateWarehouseAsync(updateWarehouseCommand),
+                DeleteWarehouseCommand deleteWarehouseCommand => await HandleDeleteWarehouseAsync(deleteWarehouseCommand),
+                CloseWarehouseCommand closeWarehouseCommand => await HandleCloseWarehouseAsync(closeWarehouseCommand),
+                ReopenWarehouseCommand reopenWarehouseCommand => await HandleReopenWarehouseAsync(reopenWarehouseCommand),
+                MoveWarehouseCommand moveWarehouseCommand => await HandleMoveWarehouseAsync(moveWarehouseCommand),
+                _ => LogAndThrowUnsupportedCommand(),
+            };
         }
 
-        private void LogAndThrowUnsupportedCommand()
+        private string LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
         // Warehouse handlers
-        private async Task HandleCreateWarehouseAsync(CreateWarehouseCommand command)
+        private async Task<string> HandleCreateWarehouseAsync(CreateWarehouseCommand command)
         {
             try
             {
@@ -57,6 +44,7 @@
 
                 // Log successful creation
                 _logger.LogInformation($"Warehouse created: {warehouseAggregate.Warehouse.Id}");
+                return warehouseAggregate.Warehouse.Id!;
             }
             catch (Exception ex)
             {
@@ -68,7 +56,7 @@
             }
         }
 
-        private async Task HandleUpdateWarehouseAsync(UpdateWarehouseCommand updateWarehouseCommand)
+        private async Task<string> HandleUpdateWarehouseAsync(UpdateWarehouseCommand updateWarehouseCommand)
         {
             try
             {
@@ -79,9 +67,14 @@
 
                     await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
 
-                    // Log successful creation
+                    // Log successful update
                     _logger.LogInformation($"Warehouse updated: {warehouseAggregate.Warehouse.Id}");
+                    return warehouseAggregate.Warehouse.Id!;
                 }
+
+                // Log failure update
+                _logger.LogInformation($"Warehouse updated failed: {updateWarehouseCommand.WarehouseId}");
+                return updateWarehouseCommand.WarehouseId!;
             }
             catch (Exception ex)
             {
@@ -93,7 +86,7 @@
             }
         }
 
-        private async Task HandleDeleteWarehouseAsync(DeleteWarehouseCommand deleteWarehouseCommand)
+        private async Task<string> HandleDeleteWarehouseAsync(DeleteWarehouseCommand deleteWarehouseCommand)
         {
             try
             {
@@ -104,9 +97,14 @@
 
                     await _repository.RemoveAsync(warehouseAggregate.Warehouse.Id);
 
-                    // Log successful creation
-                    _logger.LogInformation($"Warehouse deleted: {warehouseAggregate.Warehouse.Id}");
+                    // Log successful deletion
+                    _logger.LogInformation($"Warehouse removed: {warehouseAggregate.Warehouse.Id}");
+                    return warehouseAggregate.Warehouse.Id!;
                 }
+
+                // Log failure deletion
+                _logger.LogInformation($"Warehouse removal failed: {deleteWarehouseCommand.WarehouseId}");
+                return deleteWarehouseCommand.WarehouseId!;
             }
             catch (Exception ex)
             {
@@ -118,7 +116,7 @@
             }
         }
 
-        private async Task HandleCloseWarehouseAsync(CloseWarehouseCommand closeWarehouseCommand)
+        private async Task<string> HandleCloseWarehouseAsync(CloseWarehouseCommand closeWarehouseCommand)
         {
             try
             {
@@ -129,9 +127,14 @@
 
                     await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
 
-                    // Log successful creation
+                    // Log successful update
                     _logger.LogInformation($"Warehouse closed: {warehouseAggregate.Warehouse.Id}");
+                    return warehouseAggregate.Warehouse.Id!;
                 }
+
+                // Log failure update
+                _logger.LogInformation($"Warehouse update failed: {closeWarehouseCommand.WarehouseId}");
+                return closeWarehouseCommand.WarehouseId!;
             }
             catch (Exception ex)
             {
@@ -143,7 +146,7 @@
             }
         }
 
-        private async Task HandleReopenWarehouseAsync(ReopenWarehouseCommand reopenWarehouseCommand)
+        private async Task<string> HandleReopenWarehouseAsync(ReopenWarehouseCommand reopenWarehouseCommand)
         {
             try
             {
@@ -154,9 +157,14 @@
 
                     await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
 
-                    // Log successful creation
+                    // Log successful update
                     _logger.LogInformation($"Warehouse reopened: {warehouseAggregate.Warehouse.Id}");
+                    return warehouseAggregate.Warehouse.Id!;
                 }
+
+                // Log failure update
+                _logger.LogInformation($"Warehouse update failed: {reopenWarehouseCommand.WarehouseId}");
+                return reopenWarehouseCommand.WarehouseId!;
             }
             catch (Exception ex)
             {
@@ -168,7 +176,7 @@
             }
         }
 
-        private async Task HandleMoveWarehouseAsync(MoveWarehouseCommand moveWarehouseCommand)
+        private async Task<string> HandleMoveWarehouseAsync(MoveWarehouseCommand moveWarehouseCommand)
         {
             try
             {
@@ -185,9 +193,14 @@
 
                     await _repository.UpdateAsync(warehouseAggregate.Warehouse as TEntity);
 
-                    // Log successful creation
+                    // Log successful update
                     _logger.LogInformation($"Warehouse moved: {warehouseAggregate.Warehouse.Id}");
+                    return warehouseAggregate.Warehouse.Id!;
                 }
+
+                // Log failure update
+                _logger.LogInformation($"Warehouse update failed: {moveWarehouseCommand.WarehouseId}");
+                return moveWarehouseCommand.WarehouseId!;
             }
             catch (Exception ex)
             {

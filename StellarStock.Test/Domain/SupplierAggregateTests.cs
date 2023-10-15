@@ -3,16 +3,6 @@
     public class SupplierAggregateTests
     {
         [Fact]
-        public void ThrowsArgumentNullException_With_InvalidSupplier()
-        {
-            // Assert & Act
-            var exception = Assert.Throws<ArgumentNullException>(() => new SupplierAggregate(null));
-
-            // Assert message
-            Assert.Equal("Value cannot be null. (Parameter 'supplier')", exception.Message);
-        }
-
-        [Fact]
         public void CreateSupplier_WithValidInput_CreatesSupplierAndRaisesEvents()
         {
             // Arrange

@@ -11,40 +11,28 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task HandleAsync(TCommand command)
+        public async Task<string> HandleAsync(TCommand command)
         {
-            switch (command)
+            return command switch
             {
                 // Supplier Commands
-                case CreateSupplierCommand createSupplierCommand:
-                    await HandleCreateSupplierAsync(createSupplierCommand);
-                    break;
-                case UpdateSupplierCommand updateSupplierCommand:
-                    await HandleUpdateSupplierAsync(updateSupplierCommand);
-                    break;
-                case DeleteSupplierCommand deleteSupplierCommand:
-                    await HandleDeleteSupplierAsync(deleteSupplierCommand);
-                    break;
-                case ActivateSupplierCommand activateSupplierCommand:
-                    await HandleActivateSupplierAsync(activateSupplierCommand);
-                    break;
-                case DeactivateSupplierCommand deactivateSupplierCommand:
-                    await HandleDeactivateSupplierAsync(deactivateSupplierCommand);
-                    break;
-                default:
-                    LogAndThrowUnsupportedCommand();
-                    break;
-            }
+                CreateSupplierCommand createSupplierCommand => await HandleCreateSupplierAsync(createSupplierCommand),
+                UpdateSupplierCommand updateSupplierCommand => await HandleUpdateSupplierAsync(updateSupplierCommand),
+                DeleteSupplierCommand deleteSupplierCommand => await HandleDeleteSupplierAsync(deleteSupplierCommand),
+                ActivateSupplierCommand activateSupplierCommand => await HandleActivateSupplierAsync(activateSupplierCommand),
+                DeactivateSupplierCommand deactivateSupplierCommand => await HandleDeactivateSupplierAsync(deactivateSupplierCommand),
+                _ => LogAndThrowUnsupportedCommand(),
+            };
         }
 
-        private void LogAndThrowUnsupportedCommand()
+        private string LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
         // Supplier handlers
-        private async Task HandleCreateSupplierAsync(CreateSupplierCommand command)
+        private async Task<string> HandleCreateSupplierAsync(CreateSupplierCommand command)
         {
             try
             {
@@ -55,6 +43,7 @@
 
                 // Log successful creation
                 _logger.LogInformation($"Supplier created: {supplierAggregate.Supplier.Id}");
+                return supplierAggregate.Supplier.Id!;
             }
             catch (Exception ex)
             {
@@ -66,7 +55,7 @@
             }
         }
 
-        private async Task HandleUpdateSupplierAsync(UpdateSupplierCommand command)
+        private async Task<string> HandleUpdateSupplierAsync(UpdateSupplierCommand command)
         {
             try
             {
@@ -82,8 +71,13 @@
                     await _repository.UpdateAsync(supplier as TEntity);
 
                     // Log successful update
-                    _logger.LogInformation($"SUpplier updated: {supplier.Id}");
+                    _logger.LogInformation($"Supplier updated: {supplier.Id}");
+                    return supplier.Id!;
                 }
+
+                // Log failed update
+                _logger.LogInformation($"Supplier updated failed - could not find supplier: {command.SupplierId}");
+                return command.SupplierId;
             }
             catch (Exception ex)
             {
@@ -95,7 +89,7 @@
             }
         }
 
-        private async Task HandleDeleteSupplierAsync(DeleteSupplierCommand deleteSupplierCommand)
+        private async Task<string> HandleDeleteSupplierAsync(DeleteSupplierCommand deleteSupplierCommand)
         {
             try
             {
@@ -106,7 +100,15 @@
                     supplierAggregate.DeleteSupplier();
 
                     await _repository.RemoveAsync(supplier.Id);
+
+                    // Log successful update
+                    _logger.LogInformation($"Supplier removed: {supplier.Id}");
+                    return supplier.Id!;
                 }
+
+                // Log failed update
+                _logger.LogInformation($"Supplier removal failed: {deleteSupplierCommand.Id}");
+                return deleteSupplierCommand.Id;
             }
             catch (Exception ex)
             {
@@ -118,7 +120,7 @@
             }
         }
 
-        private async Task HandleActivateSupplierAsync(ActivateSupplierCommand activateSupplierCommand)
+        private async Task<string> HandleActivateSupplierAsync(ActivateSupplierCommand activateSupplierCommand)
         {
             try
             {
@@ -128,7 +130,15 @@
                     supplierAggregate.ActivateSupplier();
 
                     await _repository.UpdateAsync(supplierAggregate.Supplier as TEntity);
+
+                    // Log successful update
+                    _logger.LogInformation($"Supplier activated: {supplier.Id}");
+                    return supplier.Id!;
                 }
+
+                // Log failed update
+                _logger.LogInformation($"Supplier activation failed: {activateSupplierCommand.SupplierId}");
+                return activateSupplierCommand.SupplierId;
             }
             catch (Exception ex)
             {
@@ -140,7 +150,7 @@
             }
         }
 
-        private async Task HandleDeactivateSupplierAsync(DeactivateSupplierCommand deactivateSupplierCommand)
+        private async Task<string> HandleDeactivateSupplierAsync(DeactivateSupplierCommand deactivateSupplierCommand)
         {
             try
             {
@@ -150,7 +160,14 @@
                     supplierAggregate.DeactivateSupplier();
 
                     await _repository.UpdateAsync(supplierAggregate.Supplier as TEntity);
+
+                    // Log successful update
+                    _logger.LogInformation($"Supplier deactivated: {supplier.Id}");
+                    return supplier.Id!;
                 }
+                // Log failed update
+                _logger.LogInformation($"Supplier deactivation failed: {deactivateSupplierCommand.SupplierId}");
+                return deactivateSupplierCommand.SupplierId;
             }
             catch (Exception ex)
             {

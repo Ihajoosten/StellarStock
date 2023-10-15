@@ -13,22 +13,7 @@
 
         private readonly IInventoryItemRepository _inventoryItemRepository;
 
-        public WarehouseAggregate(Warehouse? warehouse)
-        {
-            ValidateAndSetProperties(warehouse);
-        }
-
-        private void ValidateAndSetProperties(Warehouse? warehouse)
-        {
-            // Basic validation
-            if (warehouse == null)
-            {
-                throw new ArgumentNullException(nameof(warehouse));
-            }
-
-            // Set properties
-            Warehouse = warehouse;
-        }
+        public WarehouseAggregate(Warehouse? warehouse) => Warehouse = warehouse;
 
         public void CreateWarehouse(string name, string phone, AddressVO address, bool isOpen)
         {

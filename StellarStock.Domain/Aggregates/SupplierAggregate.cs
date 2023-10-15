@@ -11,15 +11,7 @@ namespace StellarStock.Domain.Aggregates
         public event EventHandler<SupplierUpdatedEvent> SupplierUpdated;
         public event EventHandler<SupplierDeletedEvent> SupplierDeleted;
 
-        public SupplierAggregate(Supplier? supplier)
-        {
-            ValidateAndSetProperties(supplier);
-        }
-
-        private void ValidateAndSetProperties(Supplier? supplier)
-        {
-            Supplier = supplier ?? throw new ArgumentNullException(nameof(supplier));
-        }
+        public SupplierAggregate(Supplier? supplier) => Supplier = supplier;
 
         public void CreateSupplier(string name, string phone, string email, AddressVO address, bool isActive, DateRangeVO validityPeriod)
         {
@@ -33,7 +25,7 @@ namespace StellarStock.Domain.Aggregates
             // Create the inventory item...
             var supplier = new Supplier
             {
-                Id = new Guid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 Name = name,
                 Phone = phone,
                 ContactEmail = email,
@@ -43,6 +35,8 @@ namespace StellarStock.Domain.Aggregates
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
+
+            Supplier = supplier;
 
             // Raise the events
             OnSupplierCreated(supplier);

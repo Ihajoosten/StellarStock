@@ -3,16 +3,6 @@
     public class InventoryAggregateTests
     {
         [Fact]
-        public void ThrowsArgumentNullException_With_InvalidInventoryItem()
-        {
-            // Assert & Act
-            var exception = Assert.Throws<ArgumentNullException>(() => new InventoryAggregate(null));
-
-            // Assert message
-            Assert.Equal("Value cannot be null. (Parameter 'inventoryItem')", exception.Message);
-        }
-
-        [Fact]
         public void CanCreateInventoryItem()
         {
             // Arrange

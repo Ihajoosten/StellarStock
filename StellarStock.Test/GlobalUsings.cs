@@ -14,14 +14,14 @@ global using StellarStock.Domain.ValueObjects;
 global using StellarStock.Domain.Repositories.Base;
 
 // Application Layer Imports
-global using StellarStock.Application.Commands.InventoryItemCommands;
 global using StellarStock.Application.Handlers.CommandHandlers;
+global using StellarStock.Application.Commands.InventoryItemCommands;
+global using StellarStock.Application.Commands.SupplierCommands;
 
 // Infrastructure Layer Imports
 global using StellarStock.Infrastructure.Data;
 global using StellarStock.Infrastructure.Data.Interfaces;
 global using StellarStock.Infrastructure.Repositories.Base;
-
 
 // Presentation Layer Imports
 

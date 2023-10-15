@@ -1,4 +1,6 @@
-﻿using StellarStock.Domain.ValueObjects;
+﻿using StellarStock.Domain.Aggregates;
+using StellarStock.Domain.Entities;
+using StellarStock.Domain.ValueObjects;
 
 namespace StellarStock.Application.Handlers.CommandHandlers
 {
@@ -13,53 +15,30 @@ namespace StellarStock.Application.Handlers.CommandHandlers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task HandleAsync(TCommand command)
+        public async Task<string> HandleAsync(TCommand command)
         {
-            switch (command)
+            return command switch
             {
                 // Inventory Item Commands
-                case CreateInventoryItemCommand createInventoryItemCommand:
-                    await HandleCreateInventoryItemAsync(createInventoryItemCommand);
-                    break;
-                case UpdateInventoryItemCommand updateInventoryItemCommand:
-                    await HandleUpdateInventoryItemAsync(updateInventoryItemCommand);
-                    break;
-                case DeleteInventoryItemCommand deleteInventoryItemCommand:
-                    await HandleDeleteInventoryItemAsync(deleteInventoryItemCommand);
-                    break;
-                default:
-                    LogAndThrowUnsupportedCommand();
-                    break;
-            }
+                CreateInventoryItemCommand createInventoryItemCommand => await HandleCreateInventoryItemAsync(createInventoryItemCommand),
+                UpdateInventoryItemCommand updateInventoryItemCommand => await HandleUpdateInventoryItemAsync(updateInventoryItemCommand),
+                DeleteInventoryItemCommand deleteInventoryItemCommand => await HandleDeleteInventoryItemAsync(deleteInventoryItemCommand),
+                _ => LogAndThrowUnsupportedCommand(),
+            };
         }
 
-        private void LogAndThrowUnsupportedCommand()
+        private string LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
         // Inventory Item handlers
-        private async Task HandleCreateInventoryItemAsync(CreateInventoryItemCommand command)
+        private async Task<string> HandleCreateInventoryItemAsync(CreateInventoryItemCommand command)
         {
             try
             {
-                // Create the inventory item...
-                var dummyItem = new InventoryItem
-                {
-                    Name = command.Name,
-                    Description = command.Description,
-                    Category = command.Category,
-                    PopularityScore = command.PopularityScore,
-                    ProductCode = command.ProductCode,
-                    Quantity = command.Quantity,
-                    Money = command.Money,
-                    ValidityPeriod = command.ValidityPeriod,
-                    WarehouseId = command.WarehouseId,
-                    SupplierId = command.SupplierId
-                };
-
-                var inventoryAggregate = new InventoryAggregate(dummyItem);
+                var inventoryAggregate = new InventoryAggregate(null);
                 inventoryAggregate?.CreateInventoryItem(
                     command.Name,
                     command.Description,
@@ -77,6 +56,7 @@ namespace StellarStock.Application.Handlers.CommandHandlers
 
                 // Log successful creation
                 _logger.LogInformation($"Inventory item created: {inventoryAggregate.InventoryItem.Id}");
+                return inventoryAggregate.InventoryItem.Id!;
             }
             catch (Exception ex)
             {
@@ -88,7 +68,7 @@ namespace StellarStock.Application.Handlers.CommandHandlers
             }
         }
 
-        private async Task HandleUpdateInventoryItemAsync(UpdateInventoryItemCommand command)
+        private async Task<string> HandleUpdateInventoryItemAsync(UpdateInventoryItemCommand command)
         {
             try
             {
@@ -108,8 +88,13 @@ namespace StellarStock.Application.Handlers.CommandHandlers
                     await _repository.UpdateAsync(itemAggregate.InventoryItem as TEntity);
 
                     // Log successful update
-                    _logger.LogInformation($"Inventory item updated: {item.Id}");
+                    _logger.LogInformation($"Inventory Item updated: {item.Id}");
+                    return item.Id!;
                 }
+
+                // Log failed update
+                _logger.LogInformation($"Inventory Item updated failed: {command.InventoryItemId}");
+                return $"Unable to update Inventory Item: ${command.InventoryItemId}";
             }
             catch (Exception ex)
             {
@@ -121,7 +106,7 @@ namespace StellarStock.Application.Handlers.CommandHandlers
             }
         }
 
-        private async Task HandleDeleteInventoryItemAsync(DeleteInventoryItemCommand command)
+        private async Task<string> HandleDeleteInventoryItemAsync(DeleteInventoryItemCommand command)
         {
             try
             {
@@ -134,9 +119,14 @@ namespace StellarStock.Application.Handlers.CommandHandlers
 
                     await _repository.RemoveAsync(item.Id);
 
-                    // Log successful deletion
-                    _logger.LogInformation($"Inventory item deleted: {item.Id}");
+                    // Log successful removal
+                    _logger.LogInformation($"Inventory Item updated: {item.Id}");
+                    return item.Id!;
                 }
+
+                // Log failed removal
+                _logger.LogInformation($"Inventory Item updated failed: {command.Id}");
+                return $"Unable to update Inventory Item: ${command.Id}";
             }
             catch (Exception ex)
             {

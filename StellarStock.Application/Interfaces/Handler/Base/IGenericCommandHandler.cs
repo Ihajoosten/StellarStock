@@ -2,6 +2,6 @@
 {
     public interface IGenericCommandHandler<TCommand, TEntity> where TCommand : ICommand where TEntity : class
     {
-        Task HandleAsync(TCommand command);
+        Task<string> HandleAsync(TCommand command);
     }
 }

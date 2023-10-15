@@ -3,16 +3,6 @@
     public class WarehouseAggregateTests
     {
         [Fact]
-        public void ThrowsArgumentNullException_With_InvalidWarehouse()
-        {
-            // Assert & Act
-            var exception = Assert.Throws<ArgumentNullException>(() => new WarehouseAggregate(null));
-
-            // Assert message
-            Assert.Equal("Value cannot be null. (Parameter 'warehouse')", exception.Message);
-        }
-
-        [Fact]
         public void CreateWarehouse_WithValidInputs_CreatesWarehouseAndRaisesEvents()
         {
             // Arrange

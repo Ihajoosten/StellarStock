@@ -16,19 +16,7 @@
         public event EventHandler<InventoryItemSoldEvent> InventoryItemSold;
         public event EventHandler<InventoryItemRestockedEvent> InventoryItemRestocked;
 
-        public InventoryAggregate(InventoryItem? inventoryItem) => ValidateAndSetProperties(inventoryItem);
-
-        private void ValidateAndSetProperties(InventoryItem? inventoryItem)
-        {
-            // Basic validation
-            if (inventoryItem == null)
-            {
-                throw new ArgumentNullException(nameof(inventoryItem));
-            }
-
-            // Set properties
-            InventoryItem = inventoryItem;
-        }
+        public InventoryAggregate(InventoryItem? inventoryItem) => InventoryItem = inventoryItem;
 
         public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string warehouseId, string supplierId, DateRangeVO validityPeriod)
         {
