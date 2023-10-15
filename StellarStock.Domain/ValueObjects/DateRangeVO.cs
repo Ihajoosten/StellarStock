@@ -1,6 +1,4 @@
-﻿using StellarStock.Domain.Entities.Base;
-
-namespace StellarStock.Domain.ValueObjects
+﻿namespace StellarStock.Domain.ValueObjects
 {
     public class DateRangeVO
     {

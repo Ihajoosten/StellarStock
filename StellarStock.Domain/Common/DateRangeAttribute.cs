@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace StellarStock.Domain.Common
+﻿namespace StellarStock.Domain.Common
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
     public class DateRangeAttribute : ValidationAttribute

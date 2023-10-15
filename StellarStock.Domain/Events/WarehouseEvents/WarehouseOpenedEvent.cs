@@ -1,6 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-
-namespace StellarStock.Domain.Events.WarehouseEvents
+﻿namespace StellarStock.Domain.Events.WarehouseEvents
 {
     public class WarehouseOpenedEvent
     {

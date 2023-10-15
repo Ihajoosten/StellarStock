@@ -1,8 +1,4 @@
-﻿using StellarStock.Domain.Repositories;
-using StellarStock.Domain.Services.Interfaces;
-using StellarStock.Domain.ValueObjects;
-
-namespace StellarStock.Domain.Services
+﻿namespace StellarStock.Domain.Services
 {
     public class InventoryItemService : IInventoryItemService
     {

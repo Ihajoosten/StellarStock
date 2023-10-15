@@ -10,7 +10,7 @@ using StellarStock.Infrastructure.Data.Identity;
 
 namespace StellarStock.Infrastructure.Migrations.IdentityDb
 {
-    [DbContext(typeof(IdentityDbContext))]
+    [DbContext(typeof(Data.Identity.IdentityDbContext))]
     partial class IdentityDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

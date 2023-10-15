@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using StellarStock.Domain.Entities;
-
-namespace StellarStock.Infrastructure.Data.Interfaces
+﻿namespace StellarStock.Infrastructure.Data.Interfaces
 {
     public interface IApplicationDbContext
     {

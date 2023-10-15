@@ -1,7 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-using StellarStock.Domain.Repositories.Base;
-
-namespace StellarStock.Domain.Repositories
+﻿namespace StellarStock.Domain.Repositories
 {
     public interface IInventoryItemRepository : IGenericRepository<InventoryItem>
     {

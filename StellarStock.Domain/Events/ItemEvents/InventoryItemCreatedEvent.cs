@@ -1,6 +1,4 @@
-﻿using StellarStock.Domain.Entities;
-
-namespace StellarStock.Domain.Events.ItemEvents
+﻿namespace StellarStock.Domain.Events.ItemEvents
 {
     public class InventoryItemCreatedEvent
     {

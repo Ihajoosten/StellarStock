@@ -1,9 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using StellarStock.Domain.Repositories.Base;
-using StellarStock.Infrastructure.Data.Interfaces;
-
-namespace StellarStock.Infrastructure.Repositories.Base
+﻿namespace StellarStock.Infrastructure.Repositories.Base
 {
     public class EFGenericRepository<T> : IGenericRepository<T> where T : class
     {
