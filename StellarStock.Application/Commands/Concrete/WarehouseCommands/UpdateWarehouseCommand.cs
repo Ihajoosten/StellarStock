@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Commands.Concrete.WarehouseCommands
 {
-    public class UpdateWarehouseCommand : ICommand
+    public class UpdateWarehouseCommand : IWarehouseCommand
     {
         public string Id { get; set; }
         public string NewName { get; set; }

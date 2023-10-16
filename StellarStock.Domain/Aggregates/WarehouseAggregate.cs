@@ -2,7 +2,7 @@
 {
     public class WarehouseAggregate
     {
-        public Warehouse? Warehouse { get; private set; }
+        public Warehouse Warehouse { get; private set; }
 
         public event EventHandler<WarehouseUpdatedEvent> WarehouseUpdated;
         public event EventHandler<WarehouseOpenedEvent> WarehouseOpened;
@@ -11,9 +11,7 @@
         public event EventHandler<WarehouseMovedEvent> WarehouseMoved;
         public event EventHandler<WarehouseReopenedEvent> WarehouseReopened;
 
-        private readonly IInventoryItemRepository _inventoryItemRepository;
-
-        public WarehouseAggregate(Warehouse? warehouse) => Warehouse = warehouse;
+        public WarehouseAggregate(Warehouse warehouse) => Warehouse = warehouse;
 
         public void CreateWarehouse(string name, string phone, AddressVO address, bool isOpen)
         {
@@ -24,8 +22,8 @@
                 throw new ArgumentException("Invalid input for creating an inventory item.");
             }
 
-            // Create the inventory item...
-            Warehouse = new Warehouse
+            // Create the warehouse...
+            var warehouse = new Warehouse
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = name,
@@ -35,6 +33,8 @@
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
+
+            Warehouse = warehouse;
 
             // Raise the events
             OnWarehouseCreated(Warehouse);
@@ -77,7 +77,7 @@
                 throw new ArgumentException("New address, city, postal code, region and country are required for moving the Warehouse.");
             }
 
-            Warehouse.Address.Street = newAddress;
+            Warehouse!.Address.Street = newAddress;
             Warehouse.Address.City = newCity;
             Warehouse.Address.Region = newRegion;
             Warehouse.Address.PostalCode = newPostalCode;
@@ -92,7 +92,7 @@
         {
             if (!isOpen) { throw new ArgumentException("Cannot close an already closed Warehouse"); }
 
-            Warehouse.IsOpen = false;
+            Warehouse!.IsOpen = false;
             Warehouse.UpdatedAt = DateTime.Now;
 
             OnWarehouseClosed(Warehouse);
@@ -102,7 +102,7 @@
         {
             if (isOpen) { throw new ArgumentException("Cannot open an already opened Warehouse"); }
 
-            Warehouse.IsOpen = false;
+            Warehouse!.IsOpen = false;
             Warehouse.UpdatedAt = DateTime.Now;
 
             OnWarehouseReopened(Warehouse);
@@ -111,7 +111,7 @@
         public void DeleteWarehouse()
         {
             // Check if the Warehouse is associated with any active inventory items.
-            if (IsWarehouseAssociatedWithActiveItems(_inventoryItemRepository, Warehouse.Id))
+            if (Warehouse.StockedItems.Count > 0)
             {
                 throw new InvalidOperationException("Cannot delete a Warehouse that is associated with active inventory items.");
             }
@@ -127,12 +127,6 @@
                    string.IsNullOrEmpty(address.Region) ||
                    string.IsNullOrEmpty(address.PostalCode) ||
                    string.IsNullOrEmpty(address.Street);
-        }
-
-        private static bool IsWarehouseAssociatedWithActiveItems(IInventoryItemRepository inventoryItemRepository, string WarehouseId)
-        {
-            // Replace this with your actual logic based on your domain model.
-            return inventoryItemRepository.GetItemsByWarehouse(WarehouseId).Result.Any();
         }
 
         // Event raising methods

@@ -12,13 +12,7 @@
         public async Task<TResult> DispatchAsync<TQuery, TResult>(TQuery query) where TQuery : IQuery<TResult>
         {
             Type queryHandlerType = typeof(IQueryHandler<,>).MakeGenericType(query.GetType(), typeof(TResult));
-            dynamic handler = _serviceProvider.GetService(queryHandlerType)!;
-
-            if (handler == null)
-            {
-                throw new InvalidOperationException($"Handler not found for query type {query.GetType()}");
-            }
-
+            dynamic handler = _serviceProvider.GetService(queryHandlerType)! ?? throw new InvalidOperationException($"Handler not found for query type {query.GetType()}");
             return await handler.HandleAsync((dynamic)query);
         }
     }
