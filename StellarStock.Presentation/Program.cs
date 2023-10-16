@@ -1,4 +1,4 @@
-var builder = WebApplication.CreateBuilder(args);
+var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
@@ -23,6 +23,15 @@ services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configu
 services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
 // Application Service Dependencies
+services.AddScoped(typeof(ICommandDispatcher), typeof(CommandDispatcher));
+services.AddScoped(typeof(IQueryDispatcher), typeof(QueryDispatcher));
+services.AddScoped(typeof(IInventoryItemCommandHandler<>), typeof(InventoryItemCommandHandler<>));
+services.AddScoped(typeof(ISupplierCommandHandler<>), typeof(SupplierCommandHandler<>));
+services.AddScoped(typeof(IWarehouseCommandHandler<>), typeof(WarehouseCommandHandler<>));
+services.AddScoped(typeof(IInventoryItemQueryHandler<,>), typeof(InventoryItemQueryHandler<,>));
+services.AddScoped(typeof(ISupplierQueryHandler<,>), typeof(SupplierQueryHandler<,>));
+services.AddScoped(typeof(IWarehouseQueryHandler<,>), typeof(WarehouseQueryHandler<,>));
+
 
 // Infrastructure Repository Dependencies
 services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));

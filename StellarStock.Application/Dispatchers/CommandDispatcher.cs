@@ -1,11 +1,25 @@
 ﻿namespace StellarStock.Application.Dispatchers
 {
-    public class CommandDispatcher<TCommand> : ICommandDispatcher<TCommand>
+    public class CommandDispatcher : ICommandDispatcher
     {
-        public Task DispatchAsync(TCommand command)
+        private readonly IServiceProvider _serviceProvider;
+
+        public CommandDispatcher(IServiceProvider serviceProvider)
         {
-            // Implementation for dispatching commands
-            return Task.CompletedTask;
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        }
+
+        public async Task<bool> DispatchAsync<TCommand>(TCommand command) where TCommand : ICommand
+        {
+            Type commandHandlerType = typeof(ICommandHandler<>).MakeGenericType(command.GetType());
+            dynamic handler = _serviceProvider.GetService(commandHandlerType)!;
+
+            if (handler == null)
+            {
+                throw new InvalidOperationException($"Handler not found for command type {command.GetType()}");
+            }
+
+            return await handler.HandleAsync((dynamic)command);
         }
     }
 }

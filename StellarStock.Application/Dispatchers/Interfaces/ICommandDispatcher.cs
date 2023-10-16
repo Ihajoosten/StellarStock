@@ -1,7 +1,7 @@
 ﻿namespace StellarStock.Application.Dispatchers.Interfaces
 {
-    public interface ICommandDispatcher<TCommand>
+    public interface ICommandDispatcher
     {
-        Task DispatchAsync(TCommand command);
+        Task<bool> DispatchAsync<TCommand>(TCommand command) where TCommand : ICommand;
     }
 }

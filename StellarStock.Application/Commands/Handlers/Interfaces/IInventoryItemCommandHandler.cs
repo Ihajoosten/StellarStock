@@ -5,5 +5,7 @@
         Task<bool> HandleCreateAsync(TCommand command);
         Task<bool> HandleUpdateAsync(TCommand command);
         Task<bool> HandleDeleteAsync(TCommand command);
+        Task<bool> HandleIncreaseQuantityAsync(TCommand command);
+        Task<bool> HandleDecreaseQuantityAsync(TCommand command);
     }
 }

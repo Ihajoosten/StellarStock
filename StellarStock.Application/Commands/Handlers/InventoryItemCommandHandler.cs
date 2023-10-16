@@ -19,6 +19,8 @@
                 CreateInventoryItemCommand => await HandleCreateAsync(command),
                 UpdateInventoryItemCommand => await HandleUpdateAsync(command),
                 DeleteInventoryItemCommand => await HandleDeleteAsync(command),
+                IncreaseInventoryItemQuantityCommand => await HandleIncreaseQuantityAsync(command),
+                DecreaseInventoryItemQuantityCommand => await HandleDecreaseQuantityAsync(command),
                 _ => await LogAndThrowUnsupportedCommand()
             };
         }
@@ -160,6 +162,90 @@
 
                 // Rethrow or handle accordingly
                 throw new Exception($"Error in HandleDeleteAsync Inventory Item :: ${ex.Message}");
+            }
+        }
+
+        public async Task<bool> HandleIncreaseQuantityAsync(TCommand command)
+        {
+            try
+            {
+                var id = (command as IncreaseInventoryItemQuantityCommand)!.Id;
+                var quantity = (command as IncreaseInventoryItemQuantityCommand)!.Quantity;
+
+                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                {
+                    var itemAggregate = new InventoryAggregate(item);
+                    itemAggregate?.UpdateQuantity(quantity);
+
+                    var updated = await _repository.UpdateAsync(itemAggregate.InventoryItem);
+
+                    if (updated)
+                    {
+                        // Log successful update
+                        _logger.LogInformation($"Quantity updated from Invnetory Item: {item.Id}");
+                        return updated;
+                    }
+                    else
+                    {
+                        // Log failed update
+                        _logger.LogInformation($"Quantity updated failed from Invnetory Item: {item.Id}");
+                        return false;
+                    }
+                }
+
+                // Log failed update
+                _logger.LogInformation($"Quantity updated failed from Invnetory Item: {id}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                _logger.LogError($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
+
+                // Rethrow or handle accordingly
+                throw new Exception($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
+            }
+        }
+
+        public async Task<bool> HandleDecreaseQuantityAsync(TCommand command)
+        {
+            try
+            {
+                var id = (command as DecreaseInventoryItemQuantityCommand)!.Id;
+                var quantity = (command as DecreaseInventoryItemQuantityCommand)!.Quantity;
+
+                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                {
+                    var itemAggregate = new InventoryAggregate(item);
+                    itemAggregate?.UpdateQuantity(quantity);
+
+                    var updated = await _repository.UpdateAsync(itemAggregate.InventoryItem);
+
+                    if (updated)
+                    {
+                        // Log successful update
+                        _logger.LogInformation($"Quantity updated from Invnetory Item: {item.Id}");
+                        return updated;
+                    }
+                    else
+                    {
+                        // Log failed update
+                        _logger.LogInformation($"Quantity updated failed from Invnetory Item: {item.Id}");
+                        return false;
+                    }
+                }
+
+                // Log failed update
+                _logger.LogInformation($"Quantity updated failed from Invnetory Item: {id}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // Log the error
+                _logger.LogError($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
+
+                // Rethrow or handle accordingly
+                throw new Exception($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
             }
         }
     }

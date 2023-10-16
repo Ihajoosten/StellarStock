@@ -1,6 +1,6 @@
 ﻿namespace StellarStock.Application.Dto
 {
-    internal class WarehouseDto
+    public class WarehouseDto
     {
         public string Id { get; set; }
         public string Name { get; set; }
