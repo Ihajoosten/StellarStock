@@ -109,7 +109,7 @@
             var email = "supplier@example.com";
             var address = new AddressVO("Street", "City", "Region", "Country", "PostalCode");
             var isActive = true;
-            var validityPeriod = new DateRangeVO(DateTime.UtcNow, DateTime.UtcNow.AddDays(30));
+            var validityPeriod = new DateRangeVO(new DateTime(2023, 1, 1), new DateTime(2023, 1, 1).AddDays(30));
 
             var supplierAggregate = new SupplierAggregate(new Supplier
             {
@@ -118,7 +118,7 @@
                 Phone = phone,
                 ContactEmail = email,
                 Address = address,
-                IsActive = isActive,
+                IsActive = false,
                 ValidityPeriod = validityPeriod,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,

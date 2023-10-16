@@ -1,4 +1,4 @@
-var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 var configuration = builder.Configuration;
 
@@ -49,6 +49,12 @@ services.AddScoped<ISupplierService, SupplierService>();
 services.AddControllers();
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
+
+services.AddLogging(builder =>
+{
+    builder.AddConsole(); // Logs to the console
+    builder.AddDebug();   // Logs to the debugger output
+});
 
 var app = builder.Build();
 

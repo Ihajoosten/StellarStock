@@ -12,7 +12,7 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<bool> HandleAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleAsync(TCommand command)
         {
             return command switch
             {
@@ -26,81 +26,89 @@
             };
         }
 
-        private Task<bool> LogAndThrowUnsupportedCommand()
+        private Task<Dictionary<string, bool>> LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
-        public async Task<bool> HandleCreateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleCreateAsync(TCommand command)
         {
             try
             {
-                var name = (command as CreateWarehouseCommand)!.Name;
-                var phone = (command as CreateWarehouseCommand)!.Phone;
-                var address = (command as CreateWarehouseCommand)!.Address;
-
-                var warehouseAggregate = new WarehouseAggregate(null);
-                warehouseAggregate.CreateWarehouse(name, phone, address, true);
-
-                var created = await _repository.AddAsync(warehouseAggregate.Warehouse);
-
-                if (created)
+                if (command is not CreateWarehouseCommand createCommand)
                 {
-                    // Log successful creation
-                    _logger.LogInformation($"Warehouse created: {warehouseAggregate.Warehouse.Id}");
-                    return true;
+                    _logger.LogError("Invalid command type for HandleCreateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
+
+                var warehouse = new Warehouse
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = createCommand.Name,
+                    Phone = createCommand.Phone,
+                    Address = createCommand.Address,
+                    IsOpen = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                var added = await _repository.AddAsync(warehouse);
+
+                if (added)
+                {
+                    _logger.LogInformation($"Warehouse created: {warehouse.Id}");
+                    return new Dictionary<string, bool> { { warehouse.Id, true } };
                 }
                 else
                 {
-                    // Log failed creation
-                    _logger.LogInformation($"Warehouse creation failed:  {warehouseAggregate.Warehouse.Id}");
-                    return false;
+                    _logger.LogInformation($"Warehouse creation failed: {warehouse.Id}");
+                    return new Dictionary<string, bool> { { warehouse.Id, false } };
                 }
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError($"Error in HandleCreateAsync Warehouse :: ${ex.Message}");
-
-                // Rethrow or handle accordingly
-                throw new Exception($"Error in HandleCreateAsync Warehouse :: ${ex.Message}");
+                _logger.LogError($"Error in HandleCreateAsync Warehouse :: {ex.Message}");
+                throw new Exception($"Error in HandleCreateAsync Warehouse :: {ex.Message}");
             }
         }
 
-        public async Task<bool> HandleUpdateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleUpdateAsync(TCommand command)
         {
             try
             {
-                var id = (command as UpdateWarehouseCommand)!.Id;
-                var name = (command as UpdateWarehouseCommand)!.NewName;
-                var phone = (command as UpdateWarehouseCommand)!.NewPhone;
-                var address = (command as UpdateWarehouseCommand)!.NewAddress;
+                if (command is not UpdateWarehouseCommand updateCommand)
+                {
+                    _logger.LogError("Invalid command type for HandleUpdateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Warehouse warehouse)
+                if (await _repository.GetByIdAsync(updateCommand.Id) is Warehouse warehouse)
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
-                    warehouseAggregate.UpdateWarehouse(name, phone, address);
+                    warehouseAggregate?.UpdateWarehouse(updateCommand.NewName, updateCommand.NewPhone, updateCommand.NewAddress);
 
-                    var updated = await _repository.UpdateAsync(warehouseAggregate.Warehouse);
+                    var updated = await _repository.UpdateAsync(warehouseAggregate.Warehouse!);
 
                     if (updated)
                     {
                         // Log successful update
                         _logger.LogInformation($"Warehouse updated: {warehouse.Id}");
-                        return true;
+                        return new Dictionary<string, bool> { { warehouse.Id!, true } };
                     }
                     else
                     {
                         // Log failed update
-                        _logger.LogInformation($"Warehouse update failed: {warehouse.Id}");
-                        return false;
+                        _logger.LogInformation($"Warehouse updated failed: {warehouse.Id}");
+                        return new Dictionary<string, bool> { { warehouse.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Warehouse update failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed update
+                    _logger.LogInformation($"Warehouse updated failed: {updateCommand.Id}");
+                    return new Dictionary<string, bool> { { updateCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -112,36 +120,42 @@
             }
         }
 
-        public async Task<bool> HandleDeleteAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleDeleteAsync(TCommand command)
         {
             try
             {
-                var id = (command as DeleteWarehouseCommand)!.Id;
+                if (command is not DeleteWarehouseCommand deleteCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleDeleteAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Warehouse warehouse)
+                if (await _repository.GetByIdAsync(deleteCommand.Id) is Warehouse warehouse)
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
                     warehouseAggregate.DeleteWarehouse();
 
-                    var deleted = await _repository.RemoveAsync(warehouse.Id);
-
+                    var deleted = await _repository.RemoveAsync(warehouse.Id!);
                     if (deleted)
                     {
                         // Log successful deletion
                         _logger.LogInformation($"Warehouse deleted: {warehouse.Id}");
-                        return true;
+                        return new Dictionary<string, bool> { { warehouse.Id!, true } };
                     }
                     else
                     {
                         // Log failed deletion
-                        _logger.LogInformation($"Warehouse deletion failed: {warehouse.Id}");
-                        return false;
+                        _logger.LogInformation($"Warehouse deleting failed: {warehouse.Id}");
+                        return new Dictionary<string, bool> { { warehouse.Id!, false } };
                     }
                 }
-
-                // Log failed deletion
-                _logger.LogInformation($"Warehouse deletion failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Warehouse deleting failed: {deleteCommand.Id}");
+                    return new Dictionary<string, bool> { { deleteCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -153,36 +167,46 @@
             }
         }
 
-        public async Task<bool> HandleCloseAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleCloseAsync(TCommand command)
         {
             try
             {
-                var id = (command as CloseWarehouseCommand)!.Id;
+                if (command is not CloseWarehouseCommand closeCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleCloseAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Warehouse warehouse)
+                if (await _repository.GetByIdAsync(closeCommand.Id) is Warehouse warehouse)
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
                     warehouseAggregate.CloseWarehouse(warehouse.IsOpen);
 
-                    var closed = await _repository.UpdateAsync(warehouseAggregate.Warehouse);
+                    var closed = await _repository.UpdateAsync(warehouseAggregate.Warehouse!);
 
                     if (closed)
                     {
                         // Log successful deletion
                         _logger.LogInformation($"Warehouse closed: {warehouse.Id}");
-                        return true;
+                        return new Dictionary<string, bool> { { warehouse.Id!, true } };
+
                     }
                     else
                     {
                         // Log failed deletion
                         _logger.LogInformation($"Warehouse closing failed: {warehouse.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { warehouse.Id!, false } };
+
                     }
                 }
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Warehouse closing failed: {closeCommand.Id}");
+                    return new Dictionary<string, bool> { { closeCommand.Id!, false } };
+                }
 
-                // Log failed deletion
-                _logger.LogInformation($"Warehouse closing failed: {id}");
-                return false;
             }
             catch (Exception ex)
             {
@@ -194,36 +218,43 @@
             }
         }
 
-        public async Task<bool> HandleReopenAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleReopenAsync(TCommand command)
         {
             try
             {
-                var id = (command as ReopenWarehouseCommand)!.Id;
+                if (command is not ReopenWarehouseCommand reopenCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleReopenAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Warehouse warehouse)
+                if (await _repository.GetByIdAsync(reopenCommand.Id) is Warehouse warehouse)
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
                     warehouseAggregate.ReopenWarehouse(warehouse.IsOpen);
 
-                    var reopened = await _repository.UpdateAsync(warehouseAggregate.Warehouse);
+                    var reopened = await _repository.UpdateAsync(warehouseAggregate.Warehouse!);
 
                     if (reopened)
                     {
                         // Log successful deletion
                         _logger.LogInformation($"Warehouse reopened: {warehouse.Id}");
-                        return true;
+                        return new Dictionary<string, bool> { { warehouse.Id!, true } };
                     }
                     else
                     {
                         // Log failed deletion
                         _logger.LogInformation($"Warehouse reopening failed: {warehouse.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { warehouse.Id!, false } };
                     }
                 }
-
-                // Log failed deletion
-                _logger.LogInformation($"Warehouse reopening failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Warehouse reopening failed: {reopenCommand.Id}");
+                    return new Dictionary<string, bool> { { reopenCommand.Id!, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -235,41 +266,42 @@
             }
         }
 
-        public async Task<bool> HandleMoveAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleMoveAsync(TCommand command)
         {
             try
             {
-                var id = (command as MoveWarehouseCommand)!.Id;
-                var address = (command as MoveWarehouseCommand)!.NewAddress;
-                var city = (command as MoveWarehouseCommand)!.NewCity;
-                var postalCode = (command as MoveWarehouseCommand)!.NewPostalCode;
-                var country = (command as MoveWarehouseCommand)!.NewCountry;
-                var region = (command as MoveWarehouseCommand)!.NewRegion;
+                if (command is not MoveWarehouseCommand moveCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleMoveAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Warehouse warehouse)
+                if (await _repository.GetByIdAsync(moveCommand.Id) is Warehouse warehouse)
                 {
                     var warehouseAggregate = new WarehouseAggregate(warehouse);
-                    warehouseAggregate.MoveWarehouse(address, city, region, country, postalCode);
+                    warehouseAggregate.MoveWarehouse(moveCommand.NewAddress, moveCommand.NewCity, moveCommand.NewRegion, moveCommand.NewCountry, moveCommand.NewPostalCode);
 
-                    var moved = await _repository.UpdateAsync(warehouseAggregate.Warehouse);
-
+                    var moved = await _repository.UpdateAsync(warehouseAggregate.Warehouse!);
                     if (moved)
                     {
                         // Log successful update
                         _logger.LogInformation($"Warehouse moved: {warehouse.Id}");
-                        return true;
+                        return new Dictionary<string, bool> { { warehouse.Id!, true } };
                     }
                     else
                     {
                         // Log failed update
                         _logger.LogInformation($"Warehouse relocation failed: {warehouse.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { warehouse.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Warehouse relocation failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed update
+                    _logger.LogInformation($"Warehouse relocation failed: {moveCommand.Id}");
+                    return new Dictionary<string, bool> { { moveCommand.Id!, false } };
+                }
             }
             catch (Exception ex)
             {

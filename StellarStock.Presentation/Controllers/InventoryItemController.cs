@@ -238,7 +238,7 @@
         {
             try
             {
-                var query = new GetLowStockItemsQuery<IEnumerable<InventoryItemDto>>() { Threshold = treshold};
+                var query = new GetLowStockItemsQuery<IEnumerable<InventoryItemDto>>() { Threshold = treshold };
                 var result = await _queryDispatcher.DispatchAsync<GetLowStockItemsQuery<IEnumerable<InventoryItemDto>>, IEnumerable<InventoryItemDto>>(query);
 
                 if (result != null && result.Any())
@@ -262,7 +262,7 @@
         {
             try
             {
-                var query = new GetTopPopularItemsQuery<IEnumerable<InventoryItemDto>>() { MinScore = minScore, MaxScore = maxScore};
+                var query = new GetTopPopularItemsQuery<IEnumerable<InventoryItemDto>>() { MinScore = minScore, MaxScore = maxScore };
                 var result = await _queryDispatcher.DispatchAsync<GetTopPopularItemsQuery<IEnumerable<InventoryItemDto>>, IEnumerable<InventoryItemDto>>(query);
 
                 if (result != null && result.Any())

@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-
-namespace StellarStock.Test.Config
+﻿namespace StellarStock.Test.Config
 {
     public class TestDbContext : DbContext, IApplicationDbContext
     {

@@ -9,6 +9,14 @@
         }
 
         [Fact]
+        public void VerifyTestDbContext()
+        {
+            Assert.NotNull(_fixture.Context);
+            Assert.IsType<TestDbContext>(_fixture.Context);
+        }
+
+
+        [Fact]
         public async Task GetAllAsync_ShouldReturnEntities()
         {
             // clean up database

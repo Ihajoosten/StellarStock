@@ -2,15 +2,15 @@
 {
     public class CreateInventoryItemCommand : IInventoryItemCommand
     {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public ItemCategory Category { get; set; }
-        public int PopularityScore { get; set; }
-        public ProductCodeVO ProductCode { get; set; }
-        public QuantityVO Quantity { get; set; }
-        public MoneyVO Money { get; set; }
-        public DateRangeVO ValidityPeriod { get; set; }
-        public string WarehouseId { get; set; }
-        public string SupplierId { get; set; }
+        public required string Name { get; set; }
+        public required string Description { get; set; }
+        public required ItemCategory Category { get; set; }
+        public required int PopularityScore { get; set; }
+        public required ProductCodeVO ProductCode { get; set; }
+        public required QuantityVO Quantity { get; set; }
+        public required MoneyVO Money { get; set; }
+        public required DateRangeVO ValidityPeriod { get; set; }
+        public required string WarehouseId { get; set; }
+        public required string SupplierId { get; set; }
     }
 }

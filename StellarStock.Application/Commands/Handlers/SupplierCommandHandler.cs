@@ -12,7 +12,7 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<bool> HandleAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleAsync(TCommand command)
         {
             return command switch
             {
@@ -25,84 +25,91 @@
             };
         }
 
-        private Task<bool> LogAndThrowUnsupportedCommand()
+        private Task<Dictionary<string, bool>> LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
-        public async Task<bool> HandleCreateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleCreateAsync(TCommand command)
         {
             try
             {
-                var name = (command as CreateSupplierCommand)!.Name;
-                var phone = (command as CreateSupplierCommand)!.Phone;
-                var email = (command as CreateSupplierCommand)!.ContactEmail;
-                var address = (command as CreateSupplierCommand)!.Address;
-                var validityPeriod = (command as CreateSupplierCommand)!.ValidityPeriod;
-
-                var supplierAggregate = new SupplierAggregate(null);
-                supplierAggregate.CreateSupplier(name, phone, email, address, true, validityPeriod);
-
-                var created = await _repository.AddAsync(supplierAggregate.Supplier);
-
-                if (created)
+                if (command is not CreateSupplierCommand createCommand)
                 {
-                    // Log successful creation
-                    _logger.LogInformation($"Supplier created: {supplierAggregate.Supplier.Id}");
-                    return created;
+                    _logger.LogError("Invalid command type for HandleCreateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
+
+                var supplier = new Supplier
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = createCommand.Name,
+                    Phone = createCommand.Phone,
+                    ContactEmail = createCommand.ContactEmail,
+                    Address = createCommand.Address,
+                    ValidityPeriod = createCommand.ValidityPeriod,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                var added = await _repository.AddAsync(supplier);
+
+                if (added)
+                {
+                    _logger.LogInformation($"Supplier created: {supplier.Id}");
+                    return new Dictionary<string, bool> { { supplier.Id, true } };
                 }
                 else
                 {
-                    // Log failed update
-                    _logger.LogInformation($"Supplier creation failed:  {supplierAggregate.Supplier.Id}");
-                    return false;
+                    _logger.LogInformation($"Supplier creation failed: {supplier.Id}");
+                    return new Dictionary<string, bool> { { supplier.Id, false } };
                 }
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError($"Error in HandleCreateAsync Supplier :: ${ex.Message}");
-
-                // Rethrow or handle accordingly
-                throw new Exception($"Error in HandleCreateAsync Supplier :: ${ex.Message}");
+                _logger.LogError($"Error in HandleCreateAsync Supplier :: {ex.Message}");
+                throw new Exception($"Error in HandleCreateAsync Supplier :: {ex.Message}");
             }
         }
 
-        public async Task<bool> HandleUpdateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleUpdateAsync(TCommand command)
         {
             try
             {
-                var id = (command as UpdateSupplierCommand)!.Id;
-                var name = (command as UpdateSupplierCommand)!.NewName;
-                var phone = (command as UpdateSupplierCommand)!.NewPhone;
-                var email = (command as UpdateSupplierCommand)!.NewContactEmail;
-                var address = (command as UpdateSupplierCommand)!.NewAddress;
+                if (command is not UpdateSupplierCommand updateCommand)
+                {
+                    _logger.LogError("Invalid command type for HandleUpdateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Supplier supplier)
+                if (await _repository.GetByIdAsync(updateCommand.Id) is Supplier supplier)
                 {
                     var supplierAggregate = new SupplierAggregate(supplier);
-                    supplierAggregate.UpdateSupplier(name, phone, email, address);
+                    supplierAggregate?.UpdateSupplier(updateCommand.NewName, updateCommand.NewPhone, updateCommand.NewContactEmail, updateCommand.NewAddress);
 
-                    var updated = await _repository.UpdateAsync(supplierAggregate.Supplier);
+                    var updated = await _repository.UpdateAsync(supplierAggregate.Supplier!);
 
                     if (updated)
                     {
                         // Log successful update
                         _logger.LogInformation($"Supplier updated: {supplier.Id}");
-                        return updated;
+                        return new Dictionary<string, bool> { { supplier.Id!, true } };
                     }
                     else
                     {
                         // Log failed update
                         _logger.LogInformation($"Supplier updated failed: {supplier.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { supplier.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Supplier updated failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed update
+                    _logger.LogInformation($"Supplier updated failed: {updateCommand.Id}");
+                    return new Dictionary<string, bool> { { updateCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -114,36 +121,42 @@
             }
         }
 
-        public async Task<bool> HandleDeleteAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleDeleteAsync(TCommand command)
         {
             try
             {
-                var id = (command as DeleteSupplierCommand)!.Id;
+                if (command is not DeleteSupplierCommand deleteCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleDeleteAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Supplier supplier)
+                if (await _repository.GetByIdAsync(deleteCommand.Id) is Supplier supplier)
                 {
                     var supplierAggregate = new SupplierAggregate(supplier);
                     supplierAggregate.DeleteSupplier();
 
-                    var deleted = await _repository.RemoveAsync(supplier.Id);
-
+                    var deleted = await _repository.RemoveAsync(supplier.Id!);
                     if (deleted)
                     {
-                        // Log successful update
+                        // Log successful deletion
                         _logger.LogInformation($"Supplier deleted: {supplier.Id}");
-                        return deleted;
+                        return new Dictionary<string, bool> { { supplier.Id!, true } };
                     }
                     else
                     {
-                        // Log failed update
-                        _logger.LogInformation($"Supplier deleted failed: {supplier.Id}");
-                        return false;
+                        // Log failed deletion
+                        _logger.LogInformation($"Supplier deleting failed: {supplier.Id}");
+                        return new Dictionary<string, bool> { { supplier.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Supplier deleted failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Supplier deleting failed: {deleteCommand.Id}");
+                    return new Dictionary<string, bool> { { deleteCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -155,36 +168,42 @@
             }
         }
 
-        public async Task<bool> HandleActivateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleActivateAsync(TCommand command)
         {
             try
             {
-                var id = (command as ActivateSupplierCommand)!.Id;
+                if (command is not ActivateSupplierCommand activateCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleActivateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Supplier supplier)
+                if (await _repository.GetByIdAsync(activateCommand.Id) is Supplier supplier)
                 {
                     var supplierAggregate = new SupplierAggregate(supplier);
                     supplierAggregate.ActivateSupplier();
 
-                    var activated = await _repository.UpdateAsync(supplierAggregate.Supplier);
-
+                    var activated = await _repository.UpdateAsync(supplierAggregate.Supplier!);
                     if (activated)
                     {
-                        // Log successful update
+                        // Log successful deletion
                         _logger.LogInformation($"Supplier activated: {supplier.Id}");
-                        return activated;
+                        return new Dictionary<string, bool> { { supplier.Id!, true } };
                     }
                     else
                     {
-                        // Log failed update
-                        _logger.LogInformation($"Supplier activated failed: {supplier.Id}");
-                        return false;
+                        // Log failed deletion
+                        _logger.LogInformation($"Supplier activating failed: {supplier.Id}");
+                        return new Dictionary<string, bool> { { supplier.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Supplier activated failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Supplier activating failed: {activateCommand.Id}");
+                    return new Dictionary<string, bool> { { activateCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -196,36 +215,42 @@
             }
         }
 
-        public async Task<bool> HandleDeactivateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleDeactivateAsync(TCommand command)
         {
             try
             {
-                var id = (command as DeactivateSupplierCommand)!.Id;
+                if (command is not DeactivateSupplierCommand deactivateCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleDeactivateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is Supplier supplier)
+                if (await _repository.GetByIdAsync(deactivateCommand.Id) is Supplier supplier)
                 {
                     var supplierAggregate = new SupplierAggregate(supplier);
                     supplierAggregate.DeactivateSupplier();
 
-                    var deactivated = await _repository.UpdateAsync(supplierAggregate.Supplier);
-
+                    var deactivated = await _repository.UpdateAsync(supplierAggregate.Supplier!);
                     if (deactivated)
                     {
-                        // Log successful update
+                        // Log successful deletion
                         _logger.LogInformation($"Supplier deactivated: {supplier.Id}");
-                        return deactivated;
+                        return new Dictionary<string, bool> { { supplier.Id!, true } };
                     }
                     else
                     {
-                        // Log failed update
-                        _logger.LogInformation($"Supplier deactivated failed: {supplier.Id}");
-                        return false;
+                        // Log failed deletion
+                        _logger.LogInformation($"Supplier deactivating failed: {supplier.Id}");
+                        return new Dictionary<string, bool> { { supplier.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Supplier deactivated failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Supplier deactivating failed: {deactivateCommand.Id}");
+                    return new Dictionary<string, bool> { { deactivateCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {

@@ -2,10 +2,10 @@
 {
     public interface ISupplierCommandHandler<TCommand> : ICommandHandler<TCommand> where TCommand : ISupplierCommand
     {
-        Task<bool> HandleCreateAsync(TCommand command);
-        Task<bool> HandleUpdateAsync(TCommand command);
-        Task<bool> HandleDeleteAsync(TCommand command);
-        Task<bool> HandleActivateAsync(TCommand command);
-        Task<bool> HandleDeactivateAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleCreateAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleUpdateAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleDeleteAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleActivateAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleDeactivateAsync(TCommand command);
     }
 }

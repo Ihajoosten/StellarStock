@@ -12,7 +12,7 @@
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<bool> HandleAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleAsync(TCommand command)
         {
             return command switch
             {
@@ -25,93 +25,102 @@
             };
         }
 
-        private Task<bool> LogAndThrowUnsupportedCommand()
+        private Task<Dictionary<string, bool>> LogAndThrowUnsupportedCommand()
         {
             _logger.LogError($"Unsupported command type: {typeof(TCommand)}");
             throw new ArgumentException($"Unsupported command type: {typeof(TCommand)}");
         }
 
-        public async Task<bool> HandleCreateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleCreateAsync(TCommand command)
         {
             try
             {
-                var name = (command as CreateInventoryItemCommand)!.Name;
-                var description = (command as CreateInventoryItemCommand)!.Description;
-                var category = (command as CreateInventoryItemCommand)!.Category;
-                var popularityScore = (command as CreateInventoryItemCommand)!.PopularityScore;
-                var productCode = (command as CreateInventoryItemCommand)!.ProductCode;
-                var quantity = (command as CreateInventoryItemCommand)!.Quantity;
-                var money = (command as CreateInventoryItemCommand)!.Money;
-                var warehouseId = (command as CreateInventoryItemCommand)!.WarehouseId;
-                var supplierId = (command as CreateInventoryItemCommand)!.SupplierId;
-                var validityPeriod = (command as CreateInventoryItemCommand)!.ValidityPeriod;
-
-                var inventoryAggregate = new InventoryAggregate(null);
-                inventoryAggregate?.CreateInventoryItem(name, description, category, popularityScore,
-                    productCode, quantity, money, warehouseId, supplierId, validityPeriod);
-
-                var created = await _repository.AddAsync(inventoryAggregate.InventoryItem);
-
-                if (created)
+                if (command is not CreateInventoryItemCommand createCommand)
                 {
-                    // Log successful creation
-                    _logger.LogInformation($"Inventory item created: {inventoryAggregate.InventoryItem.Id}");
-                    return created;
+                    _logger.LogError("Invalid command type for HandleCreateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
+
+                var newItem = new InventoryItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = createCommand.Name,
+                    Description = createCommand.Description,
+                    Category = createCommand.Category,
+                    PopularityScore = createCommand.PopularityScore,
+                    ProductCode = createCommand.ProductCode,
+                    Quantity = createCommand.Quantity,
+                    Money = createCommand.Money,
+                    WarehouseId = createCommand.WarehouseId,
+                    SupplierId = createCommand.SupplierId,
+                    ValidityPeriod = createCommand.ValidityPeriod,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
+
+                var added = await _repository.AddAsync(newItem);
+
+                if (added)
+                {
+                    _logger.LogInformation($"Inventory item created: {newItem.Id}");
+                    return new Dictionary<string, bool> { { newItem.Id, true } };
                 }
                 else
                 {
-                    // Log failed update
-                    _logger.LogInformation($"Inventory item creation failed: {inventoryAggregate.InventoryItem.Id}");
-                    return false;
+                    _logger.LogInformation($"Inventory item creation failed: {newItem.Id}");
+                    return new Dictionary<string, bool> { { newItem.Id, false } };
                 }
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError($"Error in HandleCreateAsync Inventory Item :: ${ex.Message}");
-
-                // Rethrow or handle accordingly
-                throw new Exception($"Error in HandleCreateAsync Inventory Item :: ${ex.Message}");
+                _logger.LogError($"Error in HandleCreateAsync Inventory Item :: {ex.Message}");
+                throw new Exception($"Error in HandleCreateAsync Inventory Item :: {ex.Message}");
             }
         }
 
-        public async Task<bool> HandleUpdateAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleUpdateAsync(TCommand command)
         {
             try
             {
-                var id = (command as UpdateInventoryItemCommand)!.Id;
-                var name = (command as UpdateInventoryItemCommand)!.NewName;
-                var description = (command as UpdateInventoryItemCommand)!.NewDescription;
-                var category = (command as UpdateInventoryItemCommand)!.NewCategory;
-                var popularityScore = (command as UpdateInventoryItemCommand)!.NewPopularityScore;
-                var productCode = (command as UpdateInventoryItemCommand)!.NewProductCode;
-                var quantity = (command as UpdateInventoryItemCommand)!.NewQuantity;
-                var money = (command as UpdateInventoryItemCommand)!.NewMoney;
+                if (command is not UpdateInventoryItemCommand updateCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleUpdateAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                if (await _repository.GetByIdAsync(updateCommand.Id) is InventoryItem item)
                 {
                     var itemAggregate = new InventoryAggregate(item);
-                    itemAggregate?.UpdateItem(name, description, category, productCode, popularityScore, quantity, money);
+                    itemAggregate?.UpdateItem(
+                        updateCommand.NewName,
+                        updateCommand.NewDescription,
+                        updateCommand.NewCategory,
+                        updateCommand.NewProductCode,
+                        updateCommand.NewPopularityScore,
+                        updateCommand.NewQuantity,
+                        updateCommand.NewMoney);
 
-                    var updated = await _repository.UpdateAsync(itemAggregate.InventoryItem);
-
+                    var updated = await _repository.UpdateAsync(itemAggregate!.InventoryItem);
                     if (updated)
                     {
                         // Log successful update
                         _logger.LogInformation($"Inventory Item updated: {item.Id}");
-                        return updated;
+                        return new Dictionary<string, bool> { { item.Id!, true } };
                     }
                     else
                     {
                         // Log failed update
                         _logger.LogInformation($"Inventory Item updated failed: {item.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { item.Id, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Inventory Item updated failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed update
+                    _logger.LogInformation($"Inventory Item updated failed: {updateCommand.Id}");
+                    return new Dictionary<string, bool> { { updateCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -123,37 +132,42 @@
             }
         }
 
-        public async Task<bool> HandleDeleteAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleDeleteAsync(TCommand command)
         {
             try
             {
-                var id = (command as UpdateInventoryItemCommand)!.Id;
+                if (command is not DeleteInventoryItemCommand deleteCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleDeleteAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                if (await _repository.GetByIdAsync(deleteCommand.Id) is InventoryItem item)
                 {
                     var itemAggregate = new InventoryAggregate(item);
-
-                    itemAggregate?.RemoveItem();
+                    itemAggregate.RemoveItem();
 
                     var deleted = await _repository.RemoveAsync(item.Id!);
-
                     if (deleted)
                     {
                         // Log successful deletion
                         _logger.LogInformation($"Inventory Item deleted: {item.Id}");
-                        return deleted;
+                        return new Dictionary<string, bool> { { item.Id!, true } };
                     }
                     else
                     {
                         // Log failed deletion
                         _logger.LogInformation($"Inventory Item deleting failed: {item.Id}");
-                        return false;
+                        return new Dictionary<string, bool> { { item.Id!, false } };
                     }
                 }
-
-                // Log failed deletion
-                _logger.LogInformation($"Inventory Item deleting failed: {id}");
-                return false;
+                else
+                {
+                    // Log failed deletion
+                    _logger.LogInformation($"Inventory Item deleting failed: {deleteCommand.Id}");
+                    return new Dictionary<string, bool> { { deleteCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
@@ -165,87 +179,86 @@
             }
         }
 
-        public async Task<bool> HandleIncreaseQuantityAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleIncreaseQuantityAsync(TCommand command)
         {
             try
             {
-                var id = (command as IncreaseInventoryItemQuantityCommand)!.Id;
-                var quantity = (command as IncreaseInventoryItemQuantityCommand)!.Quantity;
+                if (command is not IncreaseInventoryItemQuantityCommand increaseCommand)
+                {
+                    // Log an error and return an appropriate result
+                    _logger.LogError("Invalid command type for HandleIncreaseQuantityAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                if (await _repository.GetByIdAsync(increaseCommand.Id) is InventoryItem item)
                 {
                     var itemAggregate = new InventoryAggregate(item);
-                    itemAggregate?.UpdateQuantity(quantity);
+                    itemAggregate?.UpdateQuantity(increaseCommand.Quantity);
 
-                    var updated = await _repository.UpdateAsync(itemAggregate.InventoryItem);
+                    var updated = await _repository.UpdateAsync(itemAggregate!.InventoryItem);
 
                     if (updated)
                     {
-                        // Log successful update
-                        _logger.LogInformation($"Quantity updated from Invnetory Item: {item.Id}");
-                        return updated;
+                        _logger.LogInformation($"Quantity updated from Inventory Item: {item.Id}");
+                        return new Dictionary<string, bool> { { item.Id!, true } };
                     }
                     else
                     {
-                        // Log failed update
-                        _logger.LogInformation($"Quantity updated failed from Invnetory Item: {item.Id}");
-                        return false;
+                        _logger.LogInformation($"Quantity update failed from Inventory Item: {item.Id}");
+                        return new Dictionary<string, bool> { { item.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Quantity updated failed from Invnetory Item: {id}");
-                return false;
+                else
+                {
+                    _logger.LogInformation($"Quantity update failed from Inventory Item: {increaseCommand.Id}");
+                    return new Dictionary<string, bool> { { increaseCommand.Id, false } };
+                }
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
-
-                // Rethrow or handle accordingly
-                throw new Exception($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
+                _logger.LogError($"Error in HandleIncreaseQuantityAsync Inventory Item :: {ex.Message}");
+                throw new Exception($"Error in HandleIncreaseQuantityAsync Inventory Item :: {ex.Message}");
             }
         }
 
-        public async Task<bool> HandleDecreaseQuantityAsync(TCommand command)
+        public async Task<Dictionary<string, bool>> HandleDecreaseQuantityAsync(TCommand command)
         {
             try
             {
-                var id = (command as DecreaseInventoryItemQuantityCommand)!.Id;
-                var quantity = (command as DecreaseInventoryItemQuantityCommand)!.Quantity;
+                if (command is not DecreaseInventoryItemQuantityCommand decreaseCommand)
+                {
+                    _logger.LogError("Invalid command type for HandleDecreaseQuantityAsync");
+                    return new Dictionary<string, bool> { { "InvalidCommandType", false } };
+                }
 
-                if (await _repository.GetByIdAsync(id) is InventoryItem item)
+                if (await _repository.GetByIdAsync(decreaseCommand.Id) is InventoryItem item)
                 {
                     var itemAggregate = new InventoryAggregate(item);
-                    itemAggregate?.UpdateQuantity(quantity);
+                    itemAggregate?.UpdateQuantity(decreaseCommand.Quantity);
 
-                    var updated = await _repository.UpdateAsync(itemAggregate.InventoryItem);
+                    var updated = await _repository.UpdateAsync(itemAggregate!.InventoryItem);
 
                     if (updated)
                     {
-                        // Log successful update
-                        _logger.LogInformation($"Quantity updated from Invnetory Item: {item.Id}");
-                        return updated;
+                        _logger.LogInformation($"Quantity updated from Inventory Item: {item.Id}");
+                        return new Dictionary<string, bool> { { item.Id!, true } };
                     }
                     else
                     {
-                        // Log failed update
-                        _logger.LogInformation($"Quantity updated failed from Invnetory Item: {item.Id}");
-                        return false;
+                        _logger.LogInformation($"Quantity update failed from Inventory Item: {item.Id}");
+                        return new Dictionary<string, bool> { { item.Id!, false } };
                     }
                 }
-
-                // Log failed update
-                _logger.LogInformation($"Quantity updated failed from Invnetory Item: {id}");
-                return false;
+                else
+                {
+                    _logger.LogInformation($"Quantity update failed from Inventory Item: {decreaseCommand.Id}");
+                    return new Dictionary<string, bool> { { decreaseCommand.Id!, true } };
+                }
             }
             catch (Exception ex)
             {
-                // Log the error
-                _logger.LogError($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
-
-                // Rethrow or handle accordingly
-                throw new Exception($"Error in HandleIncreaseQuantityAsync Inventory Item :: ${ex.Message}");
+                _logger.LogError($"Error in HandleDecreaseQuantityAsync Inventory Item :: {ex.Message}");
+                throw new Exception($"Error in HandleDecreaseQuantityAsync Inventory Item :: {ex.Message}");
             }
         }
     }

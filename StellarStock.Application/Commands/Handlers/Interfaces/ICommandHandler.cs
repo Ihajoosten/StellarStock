@@ -2,6 +2,6 @@
 {
     public interface ICommandHandler<TCommand> where TCommand : ICommand
     {
-        Task<bool> HandleAsync(TCommand command);
+        Task<Dictionary<string, bool>> HandleAsync(TCommand command);
     }
 }
