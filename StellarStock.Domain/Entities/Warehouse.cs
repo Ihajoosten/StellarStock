@@ -21,4 +21,3 @@
         public ICollection<InventoryItem>? StockedItems { get; set; }
     }
 }
-

@@ -23,12 +23,15 @@ services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql(configu
 services.AddDbContext<IdentityDbContext>(options => options.UseNpgsql(configuration.GetConnectionString("IdentityConnection")));
 
 // Application Service Dependencies
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(InventoryItemCommandHandler<,>));
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(SupplierCommandHandler<,>));
-services.AddScoped(typeof(IGenericCommandHandler<,>), typeof(WarehouseCommandHandler<,>));
+services.AddScoped(typeof(ICommandDispatcher), typeof(CommandDispatcher));
+services.AddScoped(typeof(IQueryDispatcher), typeof(QueryDispatcher));
+services.AddScoped(typeof(IInventoryItemCommandHandler<>), typeof(InventoryItemCommandHandler<>));
+services.AddScoped(typeof(ISupplierCommandHandler<>), typeof(SupplierCommandHandler<>));
+services.AddScoped(typeof(IWarehouseCommandHandler<>), typeof(WarehouseCommandHandler<>));
 services.AddScoped(typeof(IInventoryItemQueryHandler<,>), typeof(InventoryItemQueryHandler<,>));
 services.AddScoped(typeof(ISupplierQueryHandler<,>), typeof(SupplierQueryHandler<,>));
 services.AddScoped(typeof(IWarehouseQueryHandler<,>), typeof(WarehouseQueryHandler<,>));
+
 
 // Infrastructure Repository Dependencies
 services.AddScoped(typeof(IGenericRepository<>), typeof(EFGenericRepository<>));
@@ -46,6 +49,12 @@ services.AddScoped<ISupplierService, SupplierService>();
 services.AddControllers();
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
+
+services.AddLogging(builder =>
+{
+    builder.AddConsole(); // Logs to the console
+    builder.AddDebug();   // Logs to the debugger output
+});
 
 var app = builder.Build();
 

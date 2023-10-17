@@ -3,494 +3,598 @@
     public class SupplierCommandHandlerTests : IClassFixture<DatabaseFixture>
     {
         private readonly DatabaseFixture _fixture;
+
         public SupplierCommandHandlerTests(DatabaseFixture fixture)
         {
             _fixture = fixture;
+
+            // clean up database
+            _fixture.ClearData<InventoryItem>();
+            _fixture.ClearData<Supplier>();
+            _fixture.ClearData<Warehouse>();
         }
 
         [Fact]
-        public async Task HandleCreateSupplierAsync_ShouldCreateSupplierSuccessfully()
+        public async Task HandleAsync_CreateSupplierCommand_CallsHandleCreateAsync()
         {
-            _fixture.ClearData<Supplier>();
 
             // Arrange
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<CreateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<CreateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var command = new CreateSupplierCommand
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Name = "Test Supplier",
-                Phone = "123456789",
-                ContactEmail = "test@example.com",
-                Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
-                ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14))
-            };
-
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                // Arrange
+                var command = new CreateSupplierCommand
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14))
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                var handlerMock = new Mock<ISupplierCommandHandler<CreateSupplierCommand>>();
+                var repoMock = new Mock<IGenericRepository<Supplier>>();
+                var handler = new SupplierCommandHandler<CreateSupplierCommand>(
+                    repoMock.Object,
+                    Mock.Of<ILogger<SupplierCommandHandler<CreateSupplierCommand>>>());
 
-            // Assert
-            mockRepository.Verify(repo => repo.AddAsync(It.IsAny<Supplier>()), Times.Once);
+                // Act
+                await handler.HandleAsync(command);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier created: {result}", capturedLogMessages);
+                // Assert
+                repoMock.Verify(repo => repo.AddAsync(It.IsAny<Supplier>()), Times.Once);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleUpdateSupplierAsync_ShouldUpdateSupplierSuccessfully()
+        public async Task HandleAsync_UpdateSupplierCommand_CallsHandleUpdateAsync()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<UpdateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<UpdateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var existingSupplier = new Supplier
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Id = existingSupplierId,
-                Name = "Test Name",
-                Phone = "012345678910",
-                ContactEmail = "example@test.nl",
-                Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
-                IsActive = true,
-                ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, logger);
 
-            mockRepository.Setup(repo => repo.AddAsync(existingSupplier));
-
-            // Set up an existing supplier in the repository
-            mockRepository.Setup(repo => repo.GetByIdAsync(existingSupplierId))
-                .ReturnsAsync(existingSupplier);
-
-            var command = new UpdateSupplierCommand
-            {
-                SupplierId = existingSupplierId,
-                NewName = "Updated Supplier",
-                NewPhone = "987654321",
-                NewContactEmail = "updated@example.com",
-                NewAddress = new AddressVO("newStreet", "newPostalCode", "newCity", "newRegion", "newCountry")
-            };
-
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Once);
+                var x = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(x);
+                Assert.True(x.Id == guid);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier updated: {result}", capturedLogMessages);
+                var command = new UpdateSupplierCommand
+                {
+                    Id = guid,
+                    NewName = "UpdatedSupplier",
+                    NewPhone = "9876543210",
+                    NewContactEmail = "example@test.com",
+                    NewAddress = new AddressVO("newStreet", "newPostalCode", "testCity", "testRegion", "testCountry"),
+                };
+
+                var handler = new SupplierCommandHandler<UpdateSupplierCommand>(
+                    genericRepository,
+                    Mock.Of<ILogger<SupplierCommandHandler<UpdateSupplierCommand>>>());
+
+                // Act
+                var result = await handler.HandleAsync(command);
+                var value = result.Values.First();
+
+                // Assert
+                Assert.True(value);
+                Assert.True(result.Keys.Count == 1);
+                Assert.True(result.Values.Count == 1);
+                Assert.Equal(guid, result.Keys.First());
+
+                // Assert
+                var updated = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(updated);
+                Assert.Equal("UpdatedSupplier", updated.Name);
+                Assert.Equal("9876543210", updated.Phone);
+                Assert.Equal("example@test.com", updated.ContactEmail);
+                Assert.Equal("newStreet", updated.Address.Street);
+                Assert.Equal("newPostalCode", updated.Address.PostalCode);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleDeleteSupplierAsync_ShouldDeleteSupplierSuccessfully()
+        public async Task HandleAsync_DeleteSupplierCommand_CallsHandleDeleteAsync()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<DeleteSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<DeleteSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var existingSupplier = new Supplier
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Id = existingSupplierId,
-                Name = "Test Name",
-                Phone = "012345678910",
-                ContactEmail = "example@test.nl",
-                Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
-                IsActive = true,
-                ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, logger);
 
-            mockRepository.Setup(repo => repo.AddAsync(existingSupplier));
+                var handler = new SupplierCommandHandler<DeleteSupplierCommand>(
+                genericRepository,
+                Mock.Of<ILogger<SupplierCommandHandler<DeleteSupplierCommand>>>());
 
-            // Set up an existing supplier in the repository
-            mockRepository.Setup(repo => repo.GetByIdAsync(existingSupplierId))
-                .ReturnsAsync(existingSupplier);
-
-            var command = new DeleteSupplierCommand
-            {
-                Id = existingSupplierId
-            };
-
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(new DateTime(2023, 8, 14), new DateTime(2023, 9, 14)),
+                    IsActive = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.RemoveAsync(existingSupplierId), Times.Once);
+                var x = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(x);
+                Assert.True(x.Id == guid);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier removed: {result}", capturedLogMessages);
+                var command = new DeleteSupplierCommand
+                {
+                    Id = guid,
+                };
+
+                // Act
+                var result = await handler.HandleAsync(command);
+                var value = result.Values.First();
+
+                // Assert
+                Assert.True(value);
+                Assert.True(result.Keys.Count == 1);
+                Assert.True(result.Values.Count == 1);
+                Assert.Equal(guid, result.Keys.First());
+
+                // Ensure the item is deleted from the repository
+                var deleted = await genericRepository.GetByIdAsync(guid);
+                Assert.Null(deleted);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleUpdateSupplierAsync_ShouldNotUpdateSupplier()
+        public async Task HandleAsync_ActivateSupplierCommand_CallsHandleActivateAsync()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<UpdateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<UpdateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var command = new UpdateSupplierCommand
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                SupplierId = existingSupplierId,
-                NewName = "Updated Supplier",
-                NewPhone = "987654321",
-                NewContactEmail = "updated@example.com",
-                NewAddress = new AddressVO("newStreet", "newPostalCode", "newCity", "newRegion", "newCountry")
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, logger);
 
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 12, 14)),
+                    IsActive = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Never);
+                var command = new ActivateSupplierCommand
+                {
+                    Id = guid,
+                };
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier updated failed - could not find supplier: {result}", capturedLogMessages);
+                var handler = new SupplierCommandHandler<ActivateSupplierCommand>(
+                    genericRepository,
+                    Mock.Of<ILogger<SupplierCommandHandler<ActivateSupplierCommand>>>());
+
+                // Act
+                var result = await handler.HandleAsync(command);
+
+                // Assert
+                Assert.True(result[guid]);
+                Assert.True(result.Count == 1);
+                Assert.True(result.Values.Count == 1);
+
+                // Assert
+                var activatedSupplier = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(activatedSupplier);
+                Assert.True(activatedSupplier.IsActive);
+
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleDeleteSupplierAsync_ShouldNotDeleteSupplier()
+        public async Task HandleAsync_DeactivateSupplierCommand_CallsHandleDeactivateAsync()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<DeleteSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<DeleteSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var command = new DeleteSupplierCommand
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Id = existingSupplierId
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, logger);
 
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(DateTime.Now, new DateTime(2023, 12, 14)),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.RemoveAsync(existingSupplierId), Times.Never);
+                var command = new DeactivateSupplierCommand
+                {
+                    Id = guid,
+                };
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier removal failed: {result}", capturedLogMessages);
+                var handler = new SupplierCommandHandler<DeactivateSupplierCommand>(
+                    genericRepository,
+                    Mock.Of<ILogger<SupplierCommandHandler<DeactivateSupplierCommand>>>());
+
+                // Act
+                var result = await handler.HandleAsync(command);
+
+                // Assert
+                Assert.True(result[guid]);
+                Assert.True(result.Count == 1);
+                Assert.True(result.Values.Count == 1);
+
+                // Assert
+                var deactivatedSupplier = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(deactivatedSupplier);
+                Assert.False(deactivatedSupplier.IsActive);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleActivateSupplierAsync_ShouldActivateSupplierSuccessfully()
+        public async Task HandleAsync_UpdateSupplierCommand_LogsSuccessfulUpdate()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<ActivateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<ActivateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var existingSupplier = new Supplier
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Id = existingSupplierId,
-                Name = "Test Name",
-                Phone = "012345678910",
-                ContactEmail = "example@test.nl",
-                Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
-                IsActive = false,
-                ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var loggerMock = new Mock<ILogger<SupplierCommandHandler<UpdateSupplierCommand>>>();
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, Mock.Of<ILogger<EFGenericRepository<Supplier>>>());
 
-            mockRepository.Setup(repo => repo.AddAsync(existingSupplier));
+                var guid = Guid.NewGuid().ToString();
 
-            // Set up an existing supplier in the repository
-            mockRepository.Setup(repo => repo.GetByIdAsync(existingSupplierId))
-                .ReturnsAsync(existingSupplier);
-
-            var command = new ActivateSupplierCommand
-            {
-                SupplierId = existingSupplierId
-            };
-
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Once);
+                var x = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(x);
+                Assert.True(x.Id == guid);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier activated: {existingSupplierId}", capturedLogMessages);
+                var command = new UpdateSupplierCommand
+                {
+                    Id = guid,
+                    NewName = "UpdatedSupplier",
+                    NewPhone = "9876543210",
+                    NewContactEmail = "example@test.com",
+                    NewAddress = new AddressVO("newStreet", "newPostalCode", "testCity", "testRegion", "testCountry"),
+                };
 
-            // Verify that the result matches the supplier ID
-            Assert.Equal(existingSupplierId, result);
+                var handler = new SupplierCommandHandler<UpdateSupplierCommand>(
+            genericRepository,
+            loggerMock.Object);
+
+                // Act
+                var result = await handler.HandleAsync(command);
+
+                // Assert
+                loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(), // Use It.IsAny<EventId>() here
+                        It.Is<It.IsAnyType>((o, t) => string.Equals($"Supplier updated: {supplier.Id}", o.ToString(), StringComparison.OrdinalIgnoreCase)),
+                        It.IsAny<Exception>(),
+                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                    Times.Once);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleActivateSupplierAsync_ShouldNotActivateSupplier()
+        public async Task HandleAsync_DeleteSupplierCommand_LogsSuccessfulDeletion()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<ActivateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<ActivateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var command = new ActivateSupplierCommand
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                SupplierId = existingSupplierId
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var loggerMock = new Mock<ILogger<SupplierCommandHandler<DeleteSupplierCommand>>>();
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, Mock.Of<ILogger<EFGenericRepository<Supplier>>>());
 
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+
+                var supplier = new Supplier()
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    Name = "Test Supplier",
+                    Phone = "123456789",
+                    ContactEmail = "test@example.com",
+                    Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
+                    ValidityPeriod = new DateRangeVO(new DateTime(2022, 11, 14), new DateTime(2022, 12, 14)),
+                    IsActive = false,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                await genericRepository.AddAsync(supplier);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Never);
+                var x = await genericRepository.GetByIdAsync(guid);
+                Assert.NotNull(x);
+                Assert.True(x.Id == guid);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier activation failed: {existingSupplierId}", capturedLogMessages);
+                var command = new DeleteSupplierCommand
+                {
+                    Id = guid,
+                };
 
-            // Verify that the result matches the supplier ID
-            Assert.Equal(existingSupplierId, result);
+                var handler = new SupplierCommandHandler<DeleteSupplierCommand>(
+                    genericRepository,
+                    loggerMock.Object);
+
+                // Act
+                var result = await handler.HandleAsync(command);
+
+                // Assert
+                loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((o, t) => string.Equals($"Supplier deleted: {supplier.Id}", o.ToString(), StringComparison.OrdinalIgnoreCase)),
+                        It.IsAny<Exception>(),
+                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                    Times.Once);
+
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleActivateSupplierAsync_ShouldDeactivateSupplierSuccessfully()
+        public async Task HandleAsync_UpdateSupplierCommand_LogsFailedUpdate()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<DeactivateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<DeactivateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var existingSupplier = new Supplier
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                Id = existingSupplierId,
-                Name = "Test Name",
-                Phone = "012345678910",
-                ContactEmail = "example@test.nl",
-                Address = new AddressVO("testStreet", "testCode", "testCity", "testRegion", "testCountry"),
-                IsActive = true,
-                ValidityPeriod = new DateRangeVO(DateTime.UtcNow, new DateTime(2023, 12, 14)),
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var loggerMock = new Mock<ILogger<SupplierCommandHandler<UpdateSupplierCommand>>>();
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, Mock.Of<ILogger<EFGenericRepository<Supplier>>>());
 
-            mockRepository.Setup(repo => repo.AddAsync(existingSupplier));
+                var guid = Guid.NewGuid().ToString();
 
-            // Set up an existing supplier in the repository
-            mockRepository.Setup(repo => repo.GetByIdAsync(existingSupplierId))
-                .ReturnsAsync(existingSupplier);
+                // Do not add the supplier to the repository
 
-            var command = new DeactivateSupplierCommand
-            {
-                SupplierId = existingSupplierId
-            };
-
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var command = new UpdateSupplierCommand
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                    NewName = "UpdatedSupplier",
+                    NewPhone = "9876543210",
+                    NewContactEmail = "example@test.com",
+                    NewAddress = new AddressVO("newStreet", "newPostalCode", "testCity", "testRegion", "testCountry"),
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                var handler = new SupplierCommandHandler<UpdateSupplierCommand>(
+                    genericRepository,
+                    loggerMock.Object);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Once);
+                // Act
+                var result = await handler.HandleAsync(command);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier deactivated: {existingSupplierId}", capturedLogMessages);
+                // Assert
+                loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((o, t) => string.Equals($"Supplier updated failed: {guid}", o.ToString(), StringComparison.OrdinalIgnoreCase)),
+                        It.IsAny<Exception>(),
+                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                    Times.Once);
 
-            // Verify that the result matches the supplier ID
-            Assert.Equal(existingSupplierId, result);
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
 
         [Fact]
-        public async Task HandleActivateSupplierAsync_ShouldNotDeactivateSupplier()
+        public async Task HandleAsync_DeleteSupplierCommand_LogsFailedDeletion()
         {
-            _fixture.ClearData<Supplier>();
-
             // Arrange
-            var existingSupplierId = "existing-supplier-id";
-            var mockRepository = new Mock<IGenericRepository<Supplier>>();
-            var mockLogger = new Mock<ILogger<SupplierCommandHandler<DeactivateSupplierCommand, Supplier>>>();
-            var handler = new SupplierCommandHandler<DeactivateSupplierCommand, Supplier>(mockRepository.Object, mockLogger.Object);
+            var options = new DbContextOptionsBuilder<TestDbContext>()
+                .UseInMemoryDatabase(databaseName: "TestDatabase")
+                .Options;
 
-            var command = new DeactivateSupplierCommand
+            using var context = new TestDbContext(options);
+            using var transaction = context.Database.BeginTransaction();
+            try
             {
-                SupplierId = existingSupplierId
-            };
+                // Arrange
+                var unitOfWork = new TestUnitOfWork(context);
+                var logger = new Mock<ILogger<EFGenericRepository<Supplier>>>().Object;
+                var loggerMock = new Mock<ILogger<SupplierCommandHandler<DeleteSupplierCommand>>>();
+                var genericRepository = new EFGenericRepository<Supplier>(unitOfWork, Mock.Of<ILogger<EFGenericRepository<Supplier>>>());
 
-            // Capture log messages during the test
-            var capturedLogMessages = new List<string>();
-            mockLogger.Setup(x => x.Log(
-                    It.IsAny<LogLevel>(),
-                    It.IsAny<EventId>(),
-                    It.IsAny<It.IsAnyType>(),
-                    It.IsAny<Exception>(),
-                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()))
-                .Callback(new InvocationAction(invocation =>
+                var guid = Guid.NewGuid().ToString();
+
+                // Do not add the supplier to the repository
+
+                var command = new DeleteSupplierCommand
                 {
-                    var logLevel = (LogLevel)invocation.Arguments[0];
-                    var eventId = (EventId)invocation.Arguments[1];
-                    var message = invocation.Arguments[2]?.ToString();
-                    capturedLogMessages.Add(message);
-                }));
+                    Id = guid,
+                };
 
-            // Act
-            var result = await handler.HandleAsync(command);
+                var handler = new SupplierCommandHandler<DeleteSupplierCommand>(
+                    genericRepository,
+                    loggerMock.Object);
 
-            // Assert
-            mockRepository.Verify(repo => repo.GetByIdAsync(existingSupplierId), Times.Once);
-            mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Supplier>()), Times.Never);
+                // Act
+                var result = await handler.HandleAsync(command);
 
-            // Verify that the log message contains the expected information
-            Assert.Contains($"Supplier deactivation failed: {existingSupplierId}", capturedLogMessages);
+                // Assert
+                loggerMock.Verify(
+                    x => x.Log(
+                        LogLevel.Information,
+                        It.IsAny<EventId>(),
+                        It.Is<It.IsAnyType>((o, t) => string.Equals($"Supplier deleting failed: {guid}", o.ToString(), StringComparison.OrdinalIgnoreCase)),
+                        It.IsAny<Exception>(),
+                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                    Times.Once);
 
-            // Verify that the result matches the supplier ID
-            Assert.Equal(existingSupplierId, result);
+                // If everything is fine, commit the transaction
+                transaction.Commit();
+            }
+            finally
+            {
+                // Roll back the transaction to undo any changes made during the test
+                transaction.Rollback();
+            }
         }
     }
 }

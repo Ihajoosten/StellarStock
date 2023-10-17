@@ -2,7 +2,7 @@
 {
     public class InventoryAggregate
     {
-        public InventoryItem? InventoryItem { get; private set; }
+        public InventoryItem InventoryItem { get; private set; }
 
         public event EventHandler<InventoryItemCreatedEvent> InventoryItemCreated;
         public event EventHandler<InventoryItemQuantityUpdatedEvent> InventoryItemQuantityUpdated;
@@ -16,15 +16,16 @@
         public event EventHandler<InventoryItemSoldEvent> InventoryItemSold;
         public event EventHandler<InventoryItemRestockedEvent> InventoryItemRestocked;
 
-        public InventoryAggregate(InventoryItem? inventoryItem) => InventoryItem = inventoryItem;
+        public InventoryAggregate(InventoryItem inventoryItem) => InventoryItem = inventoryItem;
 
-        public void CreateInventoryItem(string name, string description, ItemCategory category, int popularityScore, ProductCodeVO productCode, QuantityVO quantity, MoneyVO money, string warehouseId, string supplierId, DateRangeVO validityPeriod)
+        public void CreateInventoryItem(string? name, string? description, ItemCategory? category, int? popularityScore, ProductCodeVO? productCode, QuantityVO? quantity, MoneyVO? money, string? warehouseId, string? supplierId, DateRangeVO? validityPeriod)
         {
             // Validate business rules...
             if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(description) || popularityScore < 0 || productCode == null
                 || quantity == null || money == null || string.IsNullOrEmpty(warehouseId) || string.IsNullOrEmpty(supplierId) || validityPeriod == null)
             {
                 // Handle validation error, throw an exception, or take appropriate action.
+                InventoryItem = null;
                 throw new ArgumentException("Invalid input for creating an inventory item.");
             }
 
@@ -34,10 +35,10 @@
                 Id = Guid.NewGuid().ToString(),
                 Name = name,
                 Description = description,
-                Category = category,
+                Category = category!.Value,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                PopularityScore = popularityScore,
+                PopularityScore = popularityScore!.Value,
                 ProductCode = productCode,
                 Quantity = quantity,
                 Money = money,
@@ -45,6 +46,8 @@
                 WarehouseId = warehouseId,
                 SupplierId = supplierId
             };
+
+            InventoryItem = inventoryItem;
 
             // Raise the events
             OnInventoryItemCreated(inventoryItem);
@@ -91,7 +94,7 @@
             OnInventoryItemExpired(InventoryItem.Id);
         }
 
-        public void MoveItem(string newWarehouseId)
+        public void MoveItem(string? newWarehouseId)
         {
             // Validate and move the item...
             if (string.IsNullOrEmpty(newWarehouseId))
@@ -115,8 +118,8 @@
 
         public void RemoveItem()
         {
-            // Check if the item's quantity is greater than zero before removal.
-            if (InventoryItem!.Quantity.Value > 0)
+            // Check if the item's quantity is less or equal to zero before removal.
+            if (int.IsNegative(InventoryItem!.Quantity.Value))
             {
                 throw new InvalidOperationException("Cannot remove an item with a non-zero quantity.");
             }
@@ -131,7 +134,7 @@
             OnInventoryItemRemoved(InventoryItem.Id);
         }
 
-        public void UpdateItem(string newName, string newDescription, ItemCategory newCategory, ProductCodeVO newProductCode, int newPopularityScore, QuantityVO newQuantity, MoneyVO newMoney)
+        public void UpdateItem(string? newName, string? newDescription, ItemCategory newCategory, ProductCodeVO newProductCode, int newPopularityScore, QuantityVO newQuantity, MoneyVO newMoney)
         {
             // Validate inputs...
             if (string.IsNullOrEmpty(newName))

@@ -14,17 +14,24 @@
             Context = new TestDbContext(options);
         }
 
+
         public void Dispose()
         {
+            ClearData<InventoryItem>();
+            ClearData<Supplier>();
+            ClearData<Warehouse>();
+
             // Clean up resources, e.g., close the context
             Context.Dispose();
+            GC.SuppressFinalize(this);
+
         }
 
         public void ClearData<T>() where T : class
         {
             var tableData = Context.Set<T>();
             tableData.RemoveRange(tableData);
-            Context.SaveChanges();
+            Context.SaveChangesAsync();
         }
     }
 }

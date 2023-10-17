@@ -84,6 +84,18 @@ namespace StellarStock.Domain.Aggregates
 
         public void DeleteSupplier()
         {
+            // Check if the item's quantity is less or equal to zero before removal.
+            if (Supplier!.IsActive == true)
+            {
+                throw new InvalidOperationException("Cannot remove a supplier that is still active");
+            }
+
+            // Check if the item is not expired before removal.
+            if (Supplier!.ValidityPeriod != null && Supplier.ValidityPeriod.EndDate >= DateTime.UtcNow)
+            {
+                throw new InvalidOperationException("Cannot remove a supplier that not is expired.");
+            }
+
             // Raise an event
             OnSupplierDeleted(Supplier);
         }

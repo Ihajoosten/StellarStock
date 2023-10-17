@@ -1,21 +1,31 @@
 ﻿// Customer package Imports
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Identity.Web;
-
-// Applicationg Imports
-global using StellarStock.Application.Handlers.CommandHandlers;
-global using StellarStock.Application.Handlers.QueryHandlers;
-global using StellarStock.Application.Interfaces.Handler;
-global using StellarStock.Application.Interfaces.Handler.Base;
-
+global using Microsoft.Identity.Web.Resource;
+// Application Imports
+global using StellarStock.Application.Commands.Concrete.InventoryItemCommands;
+global using StellarStock.Application.Commands.Concrete.SupplierCommands;
+global using StellarStock.Application.Commands.Concrete.WarehouseCommands;
+global using StellarStock.Application.Commands.Handlers;
+global using StellarStock.Application.Commands.Handlers.Interfaces;
+global using StellarStock.Application.Dispatchers;
+global using StellarStock.Application.Dispatchers.Interfaces;
+global using StellarStock.Application.Dto;
+global using StellarStock.Application.Queries.Concrete.InvetoryItemQueries;
+global using StellarStock.Application.Queries.Concrete.SupplierQueries;
+global using StellarStock.Application.Queries.Concrete.WarehouseQueries;
+global using StellarStock.Application.Queries.Handlers;
+global using StellarStock.Application.Queries.Handlers.Interfaces;
+global using StellarStock.Domain.Entities;
 // Domain Imports
 global using StellarStock.Domain.Repositories;
 global using StellarStock.Domain.Repositories.Base;
 global using StellarStock.Domain.Services;
 global using StellarStock.Domain.Services.Interfaces;
-
 // Infrastructure Imports
 global using StellarStock.Infrastructure.Data;
 global using StellarStock.Infrastructure.Data.Identity;

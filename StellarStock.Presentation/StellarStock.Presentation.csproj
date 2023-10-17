@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StellarStock.Application\StellarStock.Application.csproj" />
+    <ProjectReference Include="..\StellarStock.Domain\StellarStock.Domain.csproj" />
     <ProjectReference Include="..\StellarStock.Infrastructure\StellarStock.Infrastructure.csproj" />
   </ItemGroup>
 
