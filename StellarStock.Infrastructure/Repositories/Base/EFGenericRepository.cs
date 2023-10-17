@@ -52,11 +52,10 @@
                 throw;
             }
         }
-
         public async Task<bool> AddAsync(T entity)
         {
-            var checkIdReturnsNA = GetEntityId(entity) == "N/A";
-            if (checkIdReturnsNA) return false;
+            var entityId = GetEntityId(entity);
+            if (entityId == "N/A") return false;
 
             try
             {
@@ -64,24 +63,26 @@
 
                 try
                 {
+                    _logger.LogInformation($"Adding a new {typeof(T).Name}. Id: {entityId}");
+
                     await _unitOfWork.Set<T>().AddAsync(entity);
                     var result = await _unitOfWork.SaveChangesAsync();
 
                     if (result > 0)
                     {
-                        _logger.LogInformation($"Added a new {typeof(T).Name}. Id: {GetEntityId(entity)}");
+                        _logger.LogInformation($"Added a new {typeof(T).Name}. Id: {entityId}");
                         await _unitOfWork.CommitAsync();
                     }
                     else
                     {
-                        _logger.LogWarning($"Failed to add a new {typeof(T).Name}.");
+                        _logger.LogWarning($"Failed to add a new {typeof(T).Name}. Id: {entityId}");
                     }
 
                     return result > 0;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Error while adding a new {typeof(T).Name}.");
+                    _logger.LogError(ex, $"Error while adding a new {typeof(T).Name}. Id: {entityId}");
                     await _unitOfWork.RollbackAsync();
                     throw new Exception($"Error while adding new Entity :: ${ex.Message}");
                 }
@@ -89,7 +90,7 @@
             catch (Exception ex)
             {
                 // Handle the exception if BeginTransactionAsync fails
-                _logger.LogError(ex, $"Error beginning transaction for adding a new {typeof(T).Name}.");
+                _logger.LogError(ex, $"Error beginning transaction for adding a new {typeof(T).Name}. Id: {entityId}");
                 await _unitOfWork.RollbackAsync();
                 throw new Exception($"Error beginning transaction for adding a new Entity :: ${ex.Message}");
             }
@@ -97,8 +98,8 @@
 
         public async Task<bool> UpdateAsync(T entity)
         {
-            var checkIdReturnsNA = GetEntityId(entity) == "N/A";
-            if (checkIdReturnsNA) return false;
+            var entityId = GetEntityId(entity);
+            if (entityId == "N/A") return false;
 
             try
             {
@@ -111,7 +112,7 @@
 
                     if (result > 0)
                     {
-                        _logger.LogInformation($"Updated {typeof(T).Name}. Id: {GetEntityId(entity)}");
+                        _logger.LogInformation($"Updated {typeof(T).Name}. Id: {entityId}");
                         await _unitOfWork.CommitAsync();
                         return true;
                     }
